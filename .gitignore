@@ -3,3 +3,11 @@
 *.py.bak-201*
 lib/Bio/KBase/AppService/AppConfig.pm
 lib/javascript/AppService/Client.js
+lib/AppServiceImpl.py*
+lib/AppServiceServer.py
+lib/Bio/KBase/AppService/AppServiceImpl.pm.bak*
+lib/Bio/KBase/AppService/Client.pm
+lib/Bio/KBase/AppService/Service.pm
+lib/Bio/KBase/AppService/config.yml
+lib/biokbase
+p3x-download-compute-image.sh
