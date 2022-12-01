@@ -166,7 +166,7 @@ deploy: deploy-client deploy-service
 deploy-all: deploy-client deploy-service
 deploy-client: compile-typespec build-libs deploy-docs deploy-libs deploy-scripts  deploy-sh-scripts
 
-deploy-service: deploy-dir deploy-monit deploy-libs deploy-service-scripts deploy-dancer-config
+deploy-service: deploy-dir deploy-monit deploy-libs deploy-service-scripts-local deploy-dancer-config
 	for script in start_service stop_service postinstall; do \
 		$(TPAGE) $(TPAGE_DEPLOY_ARGS) $(TPAGE_ARGS) service/$$script.tt > $(TARGET)/services/$(SERVICE)/$$script ; \
 		chmod +x $(TARGET)/services/$(SERVICE)/$$script ; \
@@ -182,7 +182,7 @@ deploy-dancer-config:
 build-dancer-config:
 	$(TPAGE) $(TPAGE_BUILD_ARGS) $(TPAGE_ARGS) dancer_config.yml.tt > lib/Bio/KBase/AppService/config.yml
 
-deploy-service-scripts: $(SRC_SERVICE_SH)
+deploy-service-scripts-local: $(SRC_SERVICE_SH)
 	export KB_TOP=$(TARGET); \
 	export KB_RUNTIME=$(DEPLOY_RUNTIME); \
 	export KB_PERL_PATH=$(TARGET)/lib ; \
