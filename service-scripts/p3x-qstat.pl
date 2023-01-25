@@ -24,6 +24,8 @@ use Bio::P3::Workspace::WorkspaceClientExt;
 use Text::Table::Tiny 'generate_table';
 use Getopt::Long::Descriptive;
 
+my $json = JSON::XS->new->pretty->canonical;
+
 my($opt, $usage) = describe_options("%c %o [jobid...]",
 				    ["application|A=s" => "Limit results to the given application"],
 				    ["status|s=s\@" => "Limit results to jobs with the given status code", { default => [] }],
@@ -40,6 +42,7 @@ my($opt, $usage) = describe_options("%c %o [jobid...]",
 				    ["show-parameter=s\@" => "Show this parameter from the input parameters", { default => [] }],
 				    ["show-count=s\@" => "Show this length of this input parameter (if it is a list)", { default => [] }],
 				    ["show-all-parameters" => "Show all parameters"],
+				    ["show-formatted-parameters" => "Show all parameters in readable json"],
 				    ["elapsed-seconds" => "Show elapsed time in seconds"],
 				    ["user|u=s" => "Limit results to the given user"],
 				    ["cluster|c=s" => "Limit results to the given cluster"],
@@ -300,7 +303,7 @@ if ($opt->show_inactive_jobs)
 push(@cols, map { { title => $_ } } @{$opt->show_parameter});
 push(@cols, map { { title => $_ } } @{$opt->show_count});
 
-if ($opt->show_all_parameters)
+if ($opt->show_all_parameters || $opt->show_formatted_parameters)
 {
     push(@cols, { title => "Params" });
 }
@@ -415,6 +418,10 @@ while (my $task = $sth->fetchrow_hashref)
     if ($opt->show_all_parameters)
     {
 	push(@row, encode_json($decoded_params));
+    }
+    elsif ($opt->show_formatted_parameters)
+    {
+	push(@row, "\n" . $json->encode($decoded_params));
     }
 	 
 
