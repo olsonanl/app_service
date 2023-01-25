@@ -153,11 +153,16 @@ export TMPDIR=/tmp
 export TEMPDIR=/tmp
 
 #
-# Check for blast databases and bind in. This is temporary, hopefully.
+# Check for metagenome & blast databases and bind into the container run
 #
 blast_bind=""
+mg_bind=""
 if [[ -d /vol/blastdb/bvbrc-service ]] ; then
     blast_bind=",/vol/blastdb/bvbrc-service"
+fi
+
+if [[ -d /vol/patric3/metagenome_dbs ]]; then
+    mg_bind=",/vol/patric3/metagenome_dbs"
 fi
 
 #
@@ -212,7 +217,7 @@ fi
 singularity run \
 	    -H $WORKDIR \
 	    --env P3_WORKDIR="$WORKDIR",P3_DATA_CONTAINER="$P3_DATA_CONTAINER",P3_DATA_BIND_DESTINATION="$P3_DATA_BIND_DESTINATION" \
-	    -B $WORKDIR:/tmp${data_bind}${blast_bind}${bigtmp_bind} \
+	    -B $WORKDIR:/tmp${data_bind}${blast_bind}${mg_bind}${bigtmp_bind} \
 	    --pwd /tmp \
 	    [% container_image %] \
 	    p3x-app-shepherd --app-service [% task.appserv_url %] --task-id [% task.id %] [% task.script %] [% task.monitor_url %] app_spec params &
