@@ -39,7 +39,11 @@ if (!$year || !$month || $year !~ /^20/ || $month < 0 || $month > 12)
 
 my $end_year = $year;
 my $end_month = $month + 1;
-$end_year++ if $end_month > 12;
+if ($end_month > 12)
+{
+    $end_year++;
+    $end_month = 1;
+}
 
 my $start = sprintf("%04d-%02d-01", $year, $month);
 my $end = sprintf("%04d-%02d-01", $end_year, $end_month);
