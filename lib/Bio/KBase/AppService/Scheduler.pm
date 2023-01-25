@@ -527,6 +527,7 @@ sub task_start_check
     my $per_user_limit = 20;
     my %per_user_limit_override = ('BVBRC@patricbrc.org' => 200,
 				   'olson@patricbrc.org' => 200,
+				   'FigCore@patricbrc.org' => 200,
 				   'jdassembly@patricbrc.org' => 200,
 				   );
     
