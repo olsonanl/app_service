@@ -34,6 +34,7 @@ my($opt, $usage) = describe_options("%c %o [jobid...]",
 				    ["end-time=s" => "Limit results to jobs submitted before this time"],
 				    ["genome-id" => "For genome annotation jobs, look up the genome ID if possible"],
 				    ["ids-from=s" => "Use the given file to read IDs from"],
+				    ["ids-only" => "Only show ids of matching jobs"],
 				    ["user-metadata=s" => "Limit to jobs with the given user metadata"],
 				    ["show-output-file" => "Show the output filename"],
 				    ["show-output-path" => "Show the output path"],
@@ -235,6 +236,13 @@ if ($opt->count)
     exit 0;
 }
 
+if ($opt->ids_only)
+{
+    my $qry = qq(SELECT t.id $full_condition);
+    my $res = $dbh->selectcol_arrayref($qry, undef, @params);
+    print "@$res\n";
+    exit 0;
+}    
 
 my $qry = qq(SELECT t.id as task_id, t.state_code, t.owner, t.application_id,  
 	     if(submit_time = default(submit_time), "", submit_time) as submit_time,
