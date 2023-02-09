@@ -655,15 +655,31 @@ EAL
 	# spend most of their time waiting. If the task is flagged as one, use the
 	# configured control partition.
 	#
+	# If the task's policy setting specifies a partition, use that.
+	#
 	# Otherwise, if the cluster configuration defines a submit_queue use that.
 	#
 	# Additionally, if the cluster configuration defines a submit_cluster
 	# specify that.
 	#
 
+	my $policy = {};
+	if (my $dat = $task->req_policy_data)
+	{
+	    $policy = eval { decode_json($dat); };
+	    if (ref($policy) ne 'HASH')
+	    {
+		$policy = {};
+	    }
+	}
+	
 	if ($task->req_is_control_task)
 	{
 	    $vars{sbatch_partition} = "#SBATCH --oversubscribe --partition " . slurm_control_task_partition;
+	}
+	elsif ($policy->{partition})
+	{
+	    $vars{sbatch_partition} = "#SBATCH --partition $policy->{partition}";
 	}
 	elsif ($cinfo->submit_queue)
 	{
@@ -674,18 +690,13 @@ EAL
 	    $vars{sbatch_clusters} = "#SBATCH --clusters " . $cinfo->submit_cluster;
 	}
 
-	if (my $dat = $task->req_policy_data)
+	$vars{sbatch_reservation} = $policy->{reservation};
+	if (my $c = $policy->{constraint})
 	{
-	    my $policy = eval { decode_json($dat); };
-	    if (ref($policy) eq 'HASH')
+	    $constraint{$_} = 1 foreach $c =~ /\w+/g;
+	    if (%constraint)
 	    {
-		$vars{sbatch_reservation} = $policy->{reservation};
-		my $c = $policy->{constraint};
-		$constraint{$_} = 1 foreach $c =~ /\w+/g;
-		if (%constraint)
-		{
-		    $vars{sbatch_constraint} = "#SBATCH --constraint " . join(" ", keys %constraint);
-		}
+		$vars{sbatch_constraint} = "#SBATCH --constraint " . join(" ", keys %constraint);
 	    }
 	}
     }
