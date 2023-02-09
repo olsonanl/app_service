@@ -246,6 +246,8 @@ sub run
 	local @ARGV = @$args;
 	($opt, my $usage) = describe_options("%c %o app-service-url app-definition.json param-values.json",
 					     ["user-error-file=s", "File to which user-readable errors are written"],
+					     ["override-output-file=s", "Override output file that was passed in params"],
+					     ["override-output-path=s", "Override output path that was passed in params"],
 					     ["preflight=s", "Run the app in preflight mode. Write a JSON object to the file specified representing the expected runtime, requested CPU count, and memory use for this application invocation."],
 					     
 					     ["help|h", "Show this help message."]);
@@ -284,7 +286,7 @@ sub run
     $error_fh->autoflush(1);
 
     eval {
-	$self->preprocess_parameters($app_def_file, $params_file);
+	$self->preprocess_parameters($app_def_file, $params_file, $opt);
     };
     if ($@)
     {
@@ -622,12 +624,15 @@ sub stage_in
 
 sub preprocess_parameters
 {
-    my($self, $app_def_file, $params_file) = @_;
+    my($self, $app_def_file, $params_file, $opt) = @_;
     
     my $json = JSON::XS->new->pretty(1)->relaxed(1);
 
     my $app_def = $json->decode(scalar read_file($app_def_file));
     my $params =  $json->decode(scalar read_file($params_file));
+
+    $params->{output_path} = $opt->override_output_path if $opt->override_output_path;
+    $params->{output_file} = $opt->override_output_file if $opt->override_output_file;
 
     #
     # UTF8 decode the output path to try to fix up the international characters.
