@@ -337,7 +337,7 @@ Specify the location of standard output and standard error logging.
 These are paths on the execution host; for now we will assume a common location
 (L<< $self->exec_host_output_dir >>).
 
-Slurm doesn't set any policy for us and will notably drop the job
+Slurm does not set any policy for us and will notably drop the job
 into the working directory of the invoking script or into a
 directory defined by the --chdir flag.
 
@@ -368,7 +368,7 @@ sub submit_tasks
 
     return if @$tasks == 0;
     
-    my($account, $batch) = $self->build_submission_for_tasks($tasks);
+    my($account, $batch, $name) = $self->build_submission_for_tasks($tasks);
     
     # print $batch;
     print "Submit tasks for $account\n";
@@ -392,6 +392,12 @@ sub submit_tasks
     #	 If we are submitting via ssh and the target system is not available, we will just
     #    skip this job and let it retry later.
     #
+    # Timeout on submission:
+    #    Marking task 10393169 as failed due to sbatch: error: Batch job submission failed: Socket timed out on send/recv operation
+    #
+    # Here, we need to use squeue to query the scheduler to see if the job was actually started, and to
+    # determine the slurm job id.
+    #
     # Otherwise we mark the job as failed.
     #
     my($stdout, $stderr);
@@ -407,7 +413,10 @@ sub submit_tasks
     while (1)
     {
 	$ok = &$submit();
-	
+
+	my($get_ok, $sub_jobid, $sub_account) = $self->lookup_name_in_queue($name);
+	print "LOOKUP: ok=$ok get-ok=$get_ok sub_jobid=$sub_jobid sub_account=$sub_account\n";
+
 	if ($ok && $stdout =~ /^(\d+)/)
 	{
 	    my $id = $1;
@@ -438,6 +447,24 @@ sub submit_tasks
 		warn "Ssh failure; will leave task retryable\n";
 		last;
 	    }
+	    elsif ($stderr =~ /Socket timed out/)
+	    {
+		if ($get_ok)
+		{
+		    print STDERR "We had a task falure $stderr but were able to find jobid=$sub_jobid for account $sub_account\n";
+		    $self->update_for_submitted_tasks($tasks, $sub_jobid);
+		    last;
+		}
+		else
+		{
+		    for my $task (@$tasks)
+		    {
+			print STDERR "Marking task " . $task->id . " as failed due to $stderr and task name lookup failed\n";
+			$task->update({state_code => 'F'});
+		    }
+		    last;
+		}
+	    }
 	    else
 	    {
 		for my $task (@$tasks)
@@ -463,7 +490,7 @@ sub build_submission_for_tasks
 
     #
     # Ensure all of the tasks have the same owner, if we
-    # are submitting to a cluster where we don't use a single account.
+    # are submitting to a cluster where we do not use a single account.
     #
     my $account = $cinfo->account;
     if (!$account)
@@ -476,7 +503,6 @@ sub build_submission_for_tasks
 		die "submit_tasks: Tasks in a set must all have the same owner on this cluster";
 	    }
 	}
-	
     }
 
     #
@@ -655,7 +681,7 @@ EAL
 	# spend most of their time waiting. If the task is flagged as one, use the
 	# configured control partition.
 	#
-	# If the task's policy setting specifies a partition, use that.
+	# If the task policy setting specifies a partition, use that.
 	#
 	# Otherwise, if the cluster configuration defines a submit_queue use that.
 	#
@@ -809,7 +835,7 @@ END
 	die "Error processing template $templ_file: " . $templ->error() . "\n" . Dumper(\%vars);
     }
 
-    return($account, $batch);
+    return($account, $batch, $name);
 }
 
 
@@ -857,7 +883,7 @@ sub update_for_submitted_tasks
     $ok =$cluster->submission_allowed()
 
 Determine if submission is allowed now. At the least, the number of
-jobs that we've submitted needs to be below the maximum allowed by the
+jobs that we have submitted needs to be below the maximum allowed by the
 cluster configuration.
 
 =cut
@@ -1132,6 +1158,46 @@ sub setup_cluster_command
     }
 	 
 }
+
+sub lookup_name_in_queue
+{
+    my($self, $name) = @_;
+    
+    my $cmd = $self->setup_cluster_command([$self->slurm_path . "/squeue",
+					    "--noheader",
+					    "--name", $name,
+					    "-o", join("\t", qw(%j %i %a))]);
+    my $tries = 5;
+    while ($tries--)
+    {
+	my $out;
+	my $err;
+	my $ok = run($cmd, ">", \$out, "2>", \$err);
+	if ($ok)
+	{
+	    chomp $out;
+	    my($name, $jobid, $account) = split(/\t/, $out);
+
+	    if ($jobid ne "")
+	    {
+		return(1, $jobid, $account);
+	    }
+	    else
+	    {
+		warn "Job lookup succeeded but returned empty jobid ($out)\n";
+	    }
+	}
+	else
+	{
+	    warn "Error looking up job $name '$out' '$err'\n"; 
+	}
+	warn "Sleeping and retrying $tries\n";
+	sleep(1);
+    }
+    warn "Failed to look up id after retries\n";
+    return (0);
+}
+
 
 =back
 

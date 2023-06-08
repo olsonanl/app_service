@@ -75,13 +75,18 @@ sub create_from_asssembly_params
     #
     # For FqUtils format
     #
+
     for my $lib (@{$params->{srr_libs}})
     {
+	print Dumper($lib);
 	my $srr = $lib->{srr_accession};
-	
+
 	if ($srr =~ /^\s*([A-Z]+\d+)\s*$/)
 	{
-	    push(@libs, SRRLibrary->new($1));
+	    my $libobj = SRRLibrary->new($1);
+	    push(@libs, $libobj);
+	    $libobj->{sample_id} = $lib->{sample_id} if exists $lib->{sample_id};
+	    print Dumper(LO => $libobj);
 	}
 	else
 	{
@@ -322,6 +327,7 @@ sub expand_one_sra_metadata
 	my $fn2 = "$md->{accession}_2.fastq";
 	$nlib = PairedEndLibrary->new($fn1, $fn2);
 	$nlib->{derived_from} = $lib;
+	$nlib->{sample_id} = $lib->{sample_id} if exists $lib->{sample_id};
 	$lib->{derives} = $nlib;
 	push(@{$self->{libraries}}, $nlib);
     }
@@ -329,6 +335,7 @@ sub expand_one_sra_metadata
     {
 	my $fn1 = "$md->{accession}.fastq";
 	$nlib = SingleEndLibrary->new($fn1);
+	$nlib->{sample_id} = $lib->{sample_id} if exists $lib->{sample_id};
 	$nlib->{derived_from} = $lib;
 	$lib->{derives} = $nlib;
 	push(@{$self->{libraries}}, $nlib);
@@ -739,6 +746,7 @@ sub copy_from_tmp
     my($self, $path) = @_;
     my $file = basename($self->{read_file});
     my $tfile = "$path/$file";
+
     if (-f $tfile)
     {
 	if (!move($tfile, $self->{read_path}))
@@ -825,6 +833,7 @@ sub copy_from_tmp
     {
 	my $file = basename($self->{"read_file$suffix"});
 	my $tfile = "$path/$file";
+
 	if (-f $tfile)
 	{
 	    my $dest = $self->{"read_path$suffix"};

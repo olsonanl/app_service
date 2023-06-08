@@ -53,7 +53,7 @@ sub dbh
 sub async_dbi
 {
     my($self) = @_;
-    # Don't cache. This lets us have multiple handles flowing.
+    # Do not cache. This lets us have multiple handles flowing.
     #return $self->{async} if $self->{async};
 
     print STDERR "asycn create\n";
@@ -811,7 +811,7 @@ sub enumerate_tasks_filtered_async
 
 =item B<enumerate_tasks_filtered>
 
-Enumerate the given user's tasks.
+Enumerate the task owned by the given user.
 
 The $simple_filter is a hash with keys start_time, end_time, app, search.
 
@@ -927,6 +927,24 @@ sub format_task_for_service
 	$params = {};
     }
     #die Dumper($task);
+
+    #
+    # Custom rewrites here.
+    #
+    my $visible_application_name = $task->{application_id};
+    
+    if ($task->{application_id} eq 'GeneTree')
+    {
+	if ($params->{tree_type} eq 'viral_genome')
+	{
+	    $visible_application_name = "Viral Genome Tree";
+	}
+	elsif ($params->{tree_type} eq 'gene')
+	{
+	    $visible_application_name = "Gene Tree";
+	}
+    }
+
     my $rtask = {
 	id => $task->{id},
 	parent_id  => $task->{parent_task},
@@ -940,6 +958,7 @@ sub format_task_for_service
 	completed_time => $task->{finish_time},
 	elapsed_time => "" . $task->{elapsed_time},
         storage_location => "" . $task->{storage_location},
+	application_name => $visible_application_name,
     };
     return $rtask;
 }
