@@ -45,21 +45,28 @@ sub create_from_asssembly_params
 
     for my $pe (@{$params->{paired_end_libs}})
     {
-	my($r1, $r2, $platform, $interleaved) = @$pe{qw(read1 read2 platform interleaved)};
+	my($r1, $r2, $platform, $interleaved, $sample_id) = @$pe{qw(read1 read2 platform interleaved sample_id)};
+
+	my $nlib;
 
 	if ($interleaved && $interleaved ne 'false')
 	{
-	    push(@libs, InterleavedLibrary->new($r1, $platform));
+	    $nlib = InterleavedLibrary->new($r1, $platform);
 	}
 	else
 	{
-	    push(@libs, PairedEndLibrary->new($r1, $r2, $platform));
+	    $nlib = PairedEndLibrary->new($r1, $r2, $platform);
 	}
+	$nlib->{sample_id} = $sample_id if $sample_id;
+	push(@libs, $nlib);
     }
     for my $se (@{$params->{single_end_libs}})
     {
-	my($read, $platform) = @$se{qw(read platform)};
-	push(@libs, SingleEndLibrary->new($read, $platform));
+	my($read, $platform, $sample_id) = @$se{qw(read platform sample_id)};
+	my $nlib = SingleEndLibrary->new($read, $platform);
+	
+	$nlib->{sample_id} = $sample_id if $sample_id;
+	push(@libs, $nlib);
     }
     for my $srr (@{$params->{srr_ids}})
     {
