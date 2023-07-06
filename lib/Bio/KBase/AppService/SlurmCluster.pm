@@ -722,7 +722,7 @@ EAL
 	    $constraint{$_} = 1 foreach $c =~ /\w+/g;
 	    if (%constraint)
 	    {
-		$vars{sbatch_constraint} = "#SBATCH --constraint " . join(" ", keys %constraint);
+		$vars{sbatch_constraint} = "#SBATCH --constraint " . join("&", keys %constraint);
 	    }
 	}
     }
