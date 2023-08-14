@@ -25,7 +25,7 @@ my @jobs = @ARGV;
 
 my $db = Bio::KBase::AppService::SchedulerDB->new;
 my $ws = Bio::P3::Workspace::WorkspaceClientExt->new;
-my $token = P3AuthToken->new;
+#my $token = P3AuthToken->new;
 
 my @conds;
 my @params;
@@ -39,12 +39,12 @@ for my $id (@jobs)
 }
 my $vals = join(", ", @jobs);
 
-push(@conds, "id IN ($vals)");
+push(@conds, "t.id IN ($vals)");
 
 my $cond = join(" AND ", map { "($_)" } @conds);
 
-my $qry = qq(SELECT id, output_path, output_file, application_id
-	     FROM Task
+my $qry = qq(SELECT t.id, t.output_path, t.output_file, t.application_id, tt.token
+	     FROM Task t JOIN TaskToken tt ON t.id = tt.task_id
 	     WHERE $cond);
 
 
@@ -52,7 +52,7 @@ my $res = $db->dbh->selectall_arrayref($qry, undef, @params);
 
 for my $ent (@$res)
 {
-    my($job_id, $output_path, $output_file, $app_id) = @$ent;
+    my($job_id, $output_path, $output_file, $app_id, $token) = @$ent;
 
     if ($app_id eq 'ComprehensiveGenomeAnalysis')
     {
@@ -60,21 +60,25 @@ for my $ent (@$res)
 	$output_file = "annotation";
     }
 
-    resubmit_load_files($job_id, $output_path, $output_file, $app_id);
+#    print "Would resubmit $output_path $output_file $token\n";
+#    next;
+    
+    resubmit_load_files($job_id, $output_path, $output_file, $app_id, $token);
 }
 
 sub resubmit_load_files
 {
-    my($job_id, $output_path, $output_file, $app_id) = @_;
+    my($job_id, $output_path, $output_file, $app_id, $token) = @_;
 
     my $temp = File::Temp->newdir(CLEANUP => 1);
     my $genome_url = data_api_url . "/indexer/genome";
+    print "temp=$temp\n";
 
     my $path = "$output_path/.$output_file/load_files";
     print "$path\n";
     my $res = $ws->ls({ paths => [$path], adminmode => 1 });
     my @opts;
-    push(@opts, "-H", "Authorization: " . $token->token);
+    push(@opts, "-H", "Authorization: " . $token);
     push(@opts, "-H", "Content-Type: multipart/form-data");
     
     for my $ent (@{$res->{$path}})
@@ -85,12 +89,12 @@ sub resubmit_load_files
 
 	my $key = basename($file, ".json");
 
-	my $x = $ws->download_file("$path$file", $dest, 1, $token->token, { admin => 1 });
+	my $x = $ws->download_file("$path$file", $dest, 1, $token, { admin => 1 });
 
 	push(@opts, "-F", "$key=\@$dest");
     }
     push(@opts, $genome_url);
-    die Dumper(@opts);
+    # die Dumper(@opts);
 
 #curl -H "Authorization: AUTHORIZATION_TOKEN_HERE" -H "Content-Type: multipart/form-data" -F "genome=@genome.json" -F "genome_feature=@genome_feature_patric.json" -F "genome_feature=@genome_feature_refseq.json" -F "genome_feature=@genome_feature_brc1.json" -F "genome_sequence=@genome_sequence.json" -F "pathway=@pathway.json" -F "sp_gene=@sp_gene.json"  
 

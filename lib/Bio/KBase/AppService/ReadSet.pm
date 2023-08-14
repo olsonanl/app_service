@@ -471,6 +471,7 @@ sub stage_in_srr
 		my $nlib = SingleEndLibrary->new($fn);
 		$nlib->{derived_from} = $lib;
 		$lib->{derives} = $nlib;
+		$nlib->{sample_id} = $dlib->{sample_id} if $dlib->{sample_id};
 		push(@$libs, $nlib);
 		$dlib = $nlib;
 		# ick. Need to relocalize, but disable expand_sra so that
@@ -502,6 +503,7 @@ sub stage_in_srr
 		my $nlib = PairedEndLibrary->new($fn1, $fn2);
 		$nlib->{derived_from} = $lib;
 		$lib->{derives} = $nlib;
+		$nlib->{sample_id} = $dlib->{sample_id} if $dlib->{sample_id};
 		push(@$libs, $nlib);
 		$dlib = $nlib;
 		# ick. Need to relocalize, but disable expand_sra so that
