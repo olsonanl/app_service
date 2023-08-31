@@ -20,8 +20,12 @@ sub new
     my $specs_deploy = "$top/services/app_service/app_specs";
 
     my @spec_dirs;
-    
-    if (-d $specs_deploy)
+
+    if (defined($dir))
+    {
+	@spec_dirs = ($dir);
+    }
+    elsif (-d $specs_deploy)
     {
 	@spec_dirs = ($specs_deploy);
     }
