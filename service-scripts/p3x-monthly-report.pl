@@ -52,7 +52,7 @@ my $start_ts = "$start:00:00:00";
 my $end_ts = "$end:00:00:00";
 
 my $db = Bio::KBase::AppService::SchedulerDB->new();
-
+print Dumper($db);
 my $dbh = $db->dbh;
 
 my %app_values;
@@ -86,7 +86,7 @@ print $out_fh "\n";
 
 my $staff_check = $include_staff ? "" : "AND is_collaborator = 0 AND is_staff = 0";
 
-my $data = $dbh->selectall_hashref(qq(SELECT application_id,
+my $qry = qq(SELECT application_id,
 				     ROUND(AVG(TIMESTAMPDIFF(SECOND, start_time ,finish_time)))  AS avg,
 				     MAX(TIMESTAMPDIFF(SECOND, start_time ,finish_time)) AS max,
 				     MIN(TIMESTAMPDIFF(SECOND, start_time ,finish_time)) AS min,
@@ -103,10 +103,16 @@ my $data = $dbh->selectall_hashref(qq(SELECT application_id,
 				     FROM Task LEFT OUTER JOIN ServiceUser on Task.owner = ServiceUser.id
 				     WHERE state_code = 'C' AND application_id NOT IN ('Date', 'Sleep') AND
 				     submit_time >= ? AND
-				      submit_time < ? 
+				      submit_time < ? AND
+				      start_time > ?  AND
+				      finish_time > ? 
 				     $staff_check
-				     GROUP BY application_id), 'application_id', undef, $start, $end);
+				     GROUP BY application_id);
 
+print "$start $end $qry\n";
+my $data = $dbh->selectall_hashref($qry, 'application_id', undef, $start, $end,
+				  '1971-01-01', '1971-01-01');
+print Dumper($data);
 #
 # Pull total and failed counts.
 #
