@@ -161,8 +161,8 @@ if [[ -d /vol/blastdb/bvbrc-service ]] ; then
     blast_bind=",/vol/blastdb/bvbrc-service"
 fi
 
-if [[ -d /vol/patric3/metagenome_dbs ]] ; then
-    mg_bind=",/vol/patric3/metagenome_dbs"
+if [[ -d [% metagenome_dbs %] ]] ; then
+    mg_bind=",[% metagenome_dbs %]"
 fi
 
 #
