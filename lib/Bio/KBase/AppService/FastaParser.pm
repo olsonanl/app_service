@@ -8,7 +8,7 @@ our $max_id_len = 70;
 
 sub parse_fasta
 {
-    my($fh, $clean_fh, $on_seq, $is_prot_data) = @_;
+    my($fh, $clean_fh, $on_seq, $is_prot_data, $options) = @_;
 
     my $state = 'expect_header';
     my $cur_id;
@@ -33,7 +33,10 @@ sub parse_fasta
 		if (/^>(\S+)/)
 		{
 		    $cur_id = $1;
-		    push(@bad_ids, $cur_id) if ($cur_id =~ /,/);
+		    if ($options->{disallow_commas} && $cur_id =~ /,/)
+		    {
+			push(@bad_ids, $cur_id);
+		    }
 		    push(@long_ids, $cur_id) if length($cur_id) > $max_id_len;
 			
 		    $ids_seen{$cur_id}++;
@@ -60,7 +63,10 @@ sub parse_fasta
 		    $cur_seq = '';
 		    $cur_seq_len = 0;
 		    $cur_id = $1;
-		    push(@bad_ids, $cur_id) if ($cur_id =~ /,/);
+		    if ($options->{disallow_commas} && $cur_id =~ /,/)
+		    {
+			push(@bad_ids, $cur_id);
+		    }
 		    push(@long_ids, $cur_id) if length($cur_id) > $max_id_len;
 		    $ids_seen{$cur_id}++;
 		    $state = 'expect_data';
