@@ -208,9 +208,10 @@ sub run_preflight
 	    }
 	    $container_id = $task_container;
 	}
-	print STDERR "Pulling container $container_file if necessary\n";
-	my $rc = system("p3x-download-compute-image",
+	my @pull_cmd = ("p3x-download-compute-image",
 			$repo_url, $tmpdir, $container_file, $cache_dir);
+	print STDERR "Pulling container $container_file if necessary with @pull_cmd\n";
+	my $rc = system(@pull_cmd);
 	if ($rc != 0)
 	{
 	    warn "Failed to pull compute image\n";
