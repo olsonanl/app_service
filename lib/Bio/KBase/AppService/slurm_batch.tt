@@ -161,9 +161,20 @@ if [[ -d /vol/blastdb/bvbrc-service ]] ; then
     blast_bind=",/vol/blastdb/bvbrc-service"
 fi
 
-if [[ -d [% metagenome_dbs %] ]] ; then
-    mg_bind=",[% metagenome_dbs %]"
+#
+# We need to bind both /vol/patric3/metagenome_dbs and /disks-patric-data/metagenome_dbs
+# We prefer to bind them to a local copy if it exists.
+#
+local_mg=/disks/patric-data/metagenome_dbs
+nfs_mg=/vol/patric3/metagenome_dbs
+
+if [[ -d $local_mg ]] ; then
+    target_mg=$local_mg
+else
+    target_mg=$nfs_mg
 fi
+mg_bind=",$target_mg:$local_mg,$target_mg:$nfs_mg"
+
 
 #
 # Determine the data directory we need to bind

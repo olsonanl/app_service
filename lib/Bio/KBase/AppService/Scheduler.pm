@@ -525,6 +525,12 @@ sub task_start_check
     # rate limiting very large submissions.
     #
     my $max_per_owner_release = 50;
+
+    my %max_per_owner_release_override = (
+					  #      'BVBRC@patricbrc.org' => 100,
+					 );
+
+
     my %jobs_released_per_owner;
 
     my $cluster = $self->default_cluster;
@@ -591,13 +597,14 @@ sub task_start_check
 	#
 	my $owner = $cand->get_column("owner");
 	my $user_limit = $per_user_limit_override{$owner} // $per_user_limit;
+	my $release_limit = $max_per_owner_release_override{$owner} // $max_per_owner_release;
 	
-	if ($jobs_released_per_owner{$owner} > $max_per_owner_release ||
+	if ($jobs_released_per_owner{$owner} > $release_limit ||
 	    $user_jobs_in_queue{$owner} > $user_limit)
 	{
 	    if (!$warned{$owner}++)
 	    {
-		warn "Skipping additional submissions for $owner (per owner released=$jobs_released_per_owner{$owner} max per owner=$max_per_owner_release user-jobs=$user_jobs_in_queue{$owner} user-limit=$user_limit\n";
+		warn "Skipping additional submissions for $owner (per owner released=$jobs_released_per_owner{$owner} max per owner=$max_per_owner_release user-jobs=$user_jobs_in_queue{$owner} user-limit=$user_limit release-limit=$release_limit\n";
 	    }
 	    next;
 	}
