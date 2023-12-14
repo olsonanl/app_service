@@ -106,8 +106,10 @@ if (!$opt->submit)
 
 my @bindings = ("/disks/tmp:/tmp",
 		$here,
-		"/opt/patric-data-2020-0914a:/opt/patric-common/data",
+		"/vol/patric3/production/data-images/patric-data-2022-0119:/opt/patric-common/data",
 		"/vol/blastdb/bvbrc-service",
+		"/vol/patric3/metagenome_dbs",
+		"/disks/patric-data/metagenome_dbs",
 		);
 
 my @input;
@@ -206,6 +208,10 @@ sub run_in_container
     {
 	@strace = ("strace", "-f", "-tt", "-s", 400, "-o", "$out_dir/trace.txt");
     }
+
+    my $work_dir = "$out_dir/work";
+    make_path($work_dir);
+    print STDERR "Working in $work_dir\n";
 	
     my @cmd = ("singularity", "exec", "--env", "KB_INTERACTIVE=1", "-B", $bindings, $container, @strace, $app_script, "xx", $spec, $params);
     my @redirect;
@@ -218,6 +224,7 @@ sub run_in_container
     print "Run @cmd @redirect\n";
     my $ok = run(\@cmd,
 		 @redirect,
+		 init => sub { chdir($work_dir); }
 		);
     my $exitcode = $?;
     write_file("$out_dir/exitcode", "$exitcode\n");
