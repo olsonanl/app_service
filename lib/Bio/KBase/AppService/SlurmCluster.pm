@@ -722,7 +722,7 @@ EAL
 	    $constraint{$_} = 1 foreach $c =~ /\w+/g;
 	    if (%constraint)
 	    {
-		$vars{sbatch_constraint} = "#SBATCH --constraint " . join(" ", keys %constraint);
+		$vars{sbatch_constraint} = "#SBATCH --constraint " . join("&", keys %constraint);
 	    }
 	}
     }
@@ -1050,8 +1050,8 @@ sub queue_check
 		$self->scheduler->invalidate_user_cache($task->owner);
 		$task->update({
 		    state_code => $code,
-		    start_time => $vals->{Start},
-		    ($vals->{End} ? (finish_time => $vals->{End}) : ()),
+		    ($vals->{Start} =~ /\d+/ ? (start_time => $vals->{Start}) : ()),
+		    ($vals->{End} =~ /\d+/ ? (finish_time => $vals->{End}) : ()),
 		    search_terms => join(" ",
 					 $task->owner,
 					 $self->{code_description}->{$code},
