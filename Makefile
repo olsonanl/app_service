@@ -84,6 +84,7 @@ TPAGE_ARGS = \
 	--define redis_host=$(REDIS_HOST) \
 	--define redis_port=$(REDIS_PORT) \
 	--define redis_db=$(REDIS_DB) \
+	--define redis_password=$(REDIS_PASSWORD) \
 	--define db_host=$(DB_HOST) \
 	--define db_user=$(DB_USER) \
 	--define db_pass=$(DB_PASS) \

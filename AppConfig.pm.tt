@@ -30,6 +30,7 @@ use constant	    sched_default_cluster => '[% sched_default_cluster %]';
 use constant	    redis_host => '[% redis_host %]';
 use constant	    redis_port => '[% redis_port %]';
 use constant	    redis_db => '[% redis_db %]';
+use constant	    redis_password => '[% redis_password %]';
 
 use constant	    slurm_control_task_partition => '[% slurm_control_task_partition %]';
 
@@ -50,7 +51,7 @@ our @EXPORT_OK = qw(data_api_url github_issue_repo_owner github_issue_repo_name 
 		    binning_spades_threads binning_spades_ram
 		    binning_genome_annotation_clientgroup mash_reference_sketch
 		    app_directory app_service_url
-		    redis_host redis_port redis_db
+		    redis_host redis_port redis_db redis_password
 		    kma_db metagenome_dbs
 		    binning_data_api_url
 		    );
