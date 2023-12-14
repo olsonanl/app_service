@@ -26,7 +26,7 @@ use Redis::hiredis;
 use Bio::KBase::AppService::AppSpecs;
 use Bio::KBase::AppService::SchedulerDB;
 use Bio::KBase::AppService::AppConfig qw(sched_db_host sched_db_port sched_db_user sched_db_pass sched_db_name
-					 app_directory app_service_url redis_host redis_port redis_db
+					 app_directory app_service_url redis_host redis_port redis_db redis_password
 					 sched_default_cluster);
 use P3AuthToken;
 use IPC::Run;
@@ -74,6 +74,10 @@ if (redis_host)
 {
     $redis = Redis::hiredis->new(host => redis_host,
 				 (redis_port ? (port => redis_port) : ()));
+    if (redis_password)
+    {
+	$redis->command("auth", redis_password);
+    }
     $redis->command("select", redis_db);
 }
 

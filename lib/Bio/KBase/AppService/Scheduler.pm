@@ -5,7 +5,7 @@ use strict;
 use P3AuthToken;
 use Bio::KBase::AppService::SchedulerDB;
 use Bio::KBase::AppService::AppConfig qw(sched_db_host sched_db_user sched_db_pass sched_db_port sched_db_name
-					 redis_host redis_port redis_db);
+					 redis_host redis_port redis_db redis_password);
 use base 'Class::Accessor';
 use Data::Dumper;
 use Try::Tiny;
@@ -54,33 +54,60 @@ sub new
     my $redis;
     my $cv;
     $cv = AnyEvent->condvar;
+
     $redis = EV::Hiredis->new(host => redis_host,
-				(redis_port ? (port => redis_port) : ()),
-				on_connect => sub {
-				    print "Connect\n";
-				    $redis->command("select", redis_db, sub {
-					print  "select finished\n";
-					$cv->send();
-				    })
-				    },);
+			      (redis_port ? (port => redis_port) : ()),
+			      on_connect => sub {
+				  if (redis_password)
+				  {
+				      $redis->command("auth", redis_password, sub {
+					  $cv->send();
+				      });
+				  }
+				  else
+				  {
+				      $cv->send();
+				  }
+			      });
     $cv->wait();
-    print "redis ready\n";
+    undef $cv;
+    $cv = AnyEvent->condvar;
+    
+    $redis->command("select", redis_db, sub {
+	print  "select finished\n";
+	$cv->send();
+    },);
+    $cv->wait();
     undef $cv;
 
     my $cmd_redis;
     $cv = AnyEvent->condvar;
+
     $cmd_redis = EV::Hiredis->new(host => redis_host,
-				  (redis_port ? (port => redis_port) : ()),
-				  on_connect => sub {
-				      print "Connect\n";
-				      $cmd_redis->command("select", redis_db, sub {
-					  print  "cmd select finished\n";
+			      (redis_port ? (port => redis_port) : ()),
+			      on_connect => sub {
+				  if (redis_password)
+				  {
+				      $redis->command("auth", redis_password, sub {
 					  $cv->send();
-				      })
-				      },);
+				      });
+				  }
+				  else
+				  {
+				      $cv->send();
+				  }
+			      });
     $cv->wait();
-    print "cmd_redis ready\n";
     undef $cv;
+    $cv = AnyEvent->condvar;
+    
+    $redis->command("select", redis_db, sub {
+	print  "select finished\n";
+	$cv->send();
+    },);
+    $cv->wait();
+    undef $cv;
+    print "cmd_redis ready\n";
 
     $schema->storage->ensure_connected();
     my $self = {

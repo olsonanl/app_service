@@ -17,7 +17,7 @@ AppService
 #BEGIN_HEADER
 
 use Redis::Fast;
-use Bio::KBase::AppService::AppConfig qw(redis_host redis_port redis_db);
+use Bio::KBase::AppService::AppConfig qw(redis_host redis_port redis_db redis_password);
 use JSON::XS;
 use MongoDB;
 use Data::Dumper;
@@ -274,6 +274,7 @@ sub new
     $self->{redis_host} = $cfg->setting('redis-host') // 'localhost';
     $self->{redis_port} = $cfg->setting('redis-port') // 6379;
     $self->{redis_db} = $cfg->setting('redis-db') // 0;
+    $self->{redis_password} = $cfg->setting('redis-password');
 
     $self->{task_status_dir} = $cfg->setting("task-status-dir");
     $self->{service_url} = $cfg->setting("service-url");
@@ -292,7 +293,8 @@ sub new
     #
     my $redis = Redis::Fast->new(reconnect => 1,
 				 server => join(":", redis_host, redis_port),
-				 );
+				 redis_password ? (password => redis_password) : (),
+				);
     $redis->select(redis_db);
     $self->{redis} = $redis;
 
