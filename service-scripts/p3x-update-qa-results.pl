@@ -18,7 +18,7 @@ my $cli = Bio::KBase::AppService::Client->new;
 
 my($opt, $usage) = describe_options("%c %o input-file",
 				    ["output-file|o=s" => "Write output here"],
-				    ["html-dir|D=s" => "Write HTML output to this direcotry, named based on the input file"],
+				    ["html-dir|D=s" => "Write HTML output to this directory, named based on the input file"],
 				    ["html-file|H=s" => "Write HTML output here"],
 				    ["help|h" => "Show this help message"]);
 $usage->die() if @ARGV != 1;
