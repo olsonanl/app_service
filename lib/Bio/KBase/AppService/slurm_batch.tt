@@ -158,7 +158,7 @@ export TEMPDIR=/tmp
 nfs_bindings=""
 mg_bind=""
 
-NFS_bindings="/vol/bvbrc/production/application-backend/bvbrc_ceirr_data_submission /vol/blastdb/bvbrc-service /vol/patric3/tmp"
+NFS_bindings="/vol/bvbrc/production/application-backend /vol/blastdb/bvbrc-service /vol/patric3/tmp"
 for dir in $NFS_bindings ; do
     if [[ -d $dir ]] ; then
 	nfs_bindings="$nfs_bindings,$dir"
