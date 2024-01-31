@@ -155,11 +155,15 @@ export TEMPDIR=/tmp
 #
 # Check for metagenome & blast databases and bind into the container run
 #
-blast_bind=""
+nfs_bindings=""
 mg_bind=""
-if [[ -d /vol/blastdb/bvbrc-service ]] ; then
-    blast_bind=",/vol/blastdb/bvbrc-service"
-fi
+
+NFS_bindings="/vol/bvbrc/production/application-backend/bvbrc_ceirr_data_submission /vol/blastdb/bvbrc-service"
+for dir in $NFS_bindings ; do
+    if [[ -d $dir ]] ; then
+	nfs_bindings="$nfs_bindings,$dir"
+    fi
+done
 
 #
 # We need to bind both /vol/patric3/metagenome_dbs and /disks-patric-data/metagenome_dbs
@@ -228,7 +232,7 @@ fi
 singularity run \
 	    -H $WORKDIR \
 	    --env P3_WORKDIR="$WORKDIR",P3_DATA_CONTAINER="$P3_DATA_CONTAINER",P3_DATA_BIND_DESTINATION="$P3_DATA_BIND_DESTINATION" \
-	    -B $WORKDIR:/tmp${data_bind}${blast_bind}${mg_bind}${bigtmp_bind} \
+	    -B $WORKDIR:/tmp${data_bind}${nfs_bindings}${mg_bind}${bigtmp_bind} \
 	    --pwd /tmp \
 	    [% container_image %] \
 	    p3x-app-shepherd --app-service [% task.appserv_url %] --task-id [% task.id %] [% task.script %] [% task.monitor_url %] app_spec params &
