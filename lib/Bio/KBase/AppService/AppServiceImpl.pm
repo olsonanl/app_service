@@ -278,6 +278,7 @@ sub new
 
     $self->{task_status_dir} = $cfg->setting("task-status-dir");
     $self->{service_url} = $cfg->setting("service-url");
+    $self->{public_service_url} = $cfg->setting("public-service-url");
 
     $self->{util} = Bio::KBase::AppService::Util->new($self);
     $self->{scheduler_db} = Bio::KBase::AppService::SchedulerDB->new();
@@ -991,8 +992,8 @@ sub query_task_details
     my $tdir = "$self->{task_status_dir}/$task_id";
     
     $details = {
-	stdout_url => "$self->{service_url}/task_info/$task_id/stdout",
-	stderr_url => "$self->{service_url}/task_info/$task_id/stderr",
+	stdout_url => "$self->{public_service_url}/task_info/$task_id/stdout",
+	stderr_url => "$self->{public_service_url}/task_info/$task_id/stderr",
     };
 
     for my $f (qw(pid hostname exitcode))
