@@ -42,10 +42,9 @@ sub create_from_asssembly_params
     my($class, $params, $expand_sra) = @_;
 
     my @libs;
-
     for my $pe (@{$params->{paired_end_libs}})
     {
-	my($r1, $r2, $platform, $interleaved, $sample_id) = @$pe{qw(read1 read2 platform interleaved sample_id)};
+	my($r1, $r2, $platform, $interleaved, $sample_id, $sample_level_date, $primers, $primer_version) = @$pe{qw(read1 read2 platform interleaved sample_id sample_level_date primers primer_version)};
 
 	my $nlib;
 
@@ -58,14 +57,21 @@ sub create_from_asssembly_params
 	    $nlib = PairedEndLibrary->new($r1, $r2, $platform);
 	}
 	$nlib->{sample_id} = $sample_id if $sample_id;
+	$nlib->{sample_level_date} = $sample_level_date if $sample_level_date;
+	$nlib->{primers} = $primers if $primers;
+	$nlib->{primer_version} = $primer_version if $primer_version;
+
 	push(@libs, $nlib);
     }
     for my $se (@{$params->{single_end_libs}})
     {
-	my($read, $platform, $sample_id) = @$se{qw(read platform sample_id)};
+	my($read, $platform, $sample_id, $sample_level_date, $primers, $primer_version) = @$se{qw(read platform sample_id sample_level_date primers primer_version)};
 	my $nlib = SingleEndLibrary->new($read, $platform);
-	
 	$nlib->{sample_id} = $sample_id if $sample_id;
+	$nlib->{sample_level_date} = $sample_level_date if $sample_level_date;
+	$nlib->{primers} = $primers if $primers;
+	$nlib->{primer_version} = $primer_version if $primer_version;
+
 	push(@libs, $nlib);
     }
     for my $srr (@{$params->{srr_ids}})
@@ -93,7 +99,10 @@ sub create_from_asssembly_params
 	    my $libobj = SRRLibrary->new($1);
 	    push(@libs, $libobj);
 	    $libobj->{sample_id} = $lib->{sample_id} if exists $lib->{sample_id};
-	    print Dumper(LO => $libobj);
+		$libobj->{sample_level_date} = $lib->{sample_level_date} if exists $lib->{sample_level_date};
+		$libobj->{primers} = $lib->{primers} if exists $lib->{primers};
+		$libobj->{primer_version} = $lib->{primer_version} if exists $lib->{primer_version};
+		print Dumper(LO => $libobj);
 	}
 	else
 	{
@@ -335,6 +344,9 @@ sub expand_one_sra_metadata
 	$nlib = PairedEndLibrary->new($fn1, $fn2);
 	$nlib->{derived_from} = $lib;
 	$nlib->{sample_id} = $lib->{sample_id} if exists $lib->{sample_id};
+	$nlib->{sample_level_date} = $lib->{sample_level_date} if exists $lib->{sample_level_date};
+	$nlib->{primers} = $lib->{primers} if exists $lib->{primers};
+	$nlib->{primer_version} = $lib->{primer_version} if exists $lib->{primer_version};
 	$lib->{derives} = $nlib;
 	push(@{$self->{libraries}}, $nlib);
     }
@@ -343,6 +355,9 @@ sub expand_one_sra_metadata
 	my $fn1 = "$md->{accession}.fastq";
 	$nlib = SingleEndLibrary->new($fn1);
 	$nlib->{sample_id} = $lib->{sample_id} if exists $lib->{sample_id};
+	$nlib->{sample_level_date} = $lib->{sample_level_date} if exists $lib->{sample_level_date};
+	$nlib->{primers} = $lib->{primers} if exists $lib->{primers};
+	$nlib->{primer_version} = $lib->{primer_version} if exists $lib->{primer_version};
 	$nlib->{derived_from} = $lib;
 	$lib->{derives} = $nlib;
 	push(@{$self->{libraries}}, $nlib);
