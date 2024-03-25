@@ -6,6 +6,19 @@ use Data::Dumper;
 use strict;
 use Proc::ProcessTable;
 use POSIX;
+use Getopt::Long::Descriptive;
+
+my($opt, $usage) = describe_options("%c %o",
+				    ["check", "kill -0", { default => 0 }],
+				    ["KILL|9", "kill -9", { default => 0 }],
+				    ["help|h" => "show this help message"]);
+
+print($usage->text), exit 0 if $opt->help;
+die($usage->text) if @ARGV != 0;
+my $signal = 1;
+
+$signal = 9 if $opt->kill;
+$signal = 0 if $opt->check;
 
 my $table = Proc::ProcessTable->new;
 
@@ -20,7 +33,7 @@ for my $ent (@{$table->table})
 
 my @to_check = @{$kid_of{1}};
 
-my @apps = grep { $pid_rec{$_}->{cmndline} =~ /App|(java.*vigor)/ } @to_check;
+my @apps = grep { $pid_rec{$_}->{cmndline} =~ /App|(java.*(pilon|vigor))|fasterq|mafft|hisat2|fftnsi/ } @to_check;
 
 print Dumper(@apps);
 
@@ -35,6 +48,6 @@ while (@apps)
     my $t = asctime(localtime $pid_rec{$pid}->{start});
     chomp $t;
     print "$pid\t$pid_rec{$pid}->{ppid}\t$t\t$pid_rec{$pid}->{cmndline}\n";
-    my $ret = kill 1, $pid;
+    my $ret = kill $signal, $pid;
     $ret or warn "kill $pid: $!\n";
 } 
