@@ -431,6 +431,8 @@ sub stage_in_srr
     my($stdout, $stderr);
     print "@cmd\n";
     my $ok = IPC::Run::run(\@cmd, '>', \$stdout, '2>', \$stderr);
+    print "Contents of $path after download:\n";
+    system("ls", "-l", $path);
     if (!$ok)
     {
 	die "Failure $? to run command @cmd: stdout:\n$stdout\nstderr:\n$stderr\n";
@@ -709,6 +711,7 @@ use strict;
 use base 'ReadLibrary';
 use File::Basename;
 use File::Copy 'move';
+use Data::Dumper;
 
 sub is_paired_end { return 0; }
 sub is_single_end { return 1; }
@@ -765,7 +768,26 @@ sub copy_from_tmp
     }
     else
     {
-	die "copy_from_tmp: missing file $tfile";
+	#
+	# New fasterq-dump may have written our single file to XXX_1.fastq.
+	# Check for that case.
+	#
+	my($base, $npath, $suffix) = fileparse($tfile, '.fastq', '.fq');
+	print Dumper($file, $base, $npath, $suffix);
+	my $nfile = "$npath${base}_1$suffix";
+	
+	if (-f $nfile)
+	{
+	    print STDERR "Moving from $nfile instead\n";
+	    if (!move($nfile, $self->{read_path}))
+	    {
+		die "copy_from_tmp: error moving $nfile => $self->{read_path}: $!";
+	    }
+	}
+	else
+	{
+	    die "copy_from_tmp: missing file $tfile and alternative $nfile";
+	}
     }
 }
     
