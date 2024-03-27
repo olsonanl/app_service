@@ -51,6 +51,7 @@ P3_DATA = $(SEEDTK)/data
 REFERENCE_DATA_DIR = /tmp
 
 MASH_REFERENCE_SKETCH = /vol/patric3/production/data/trees/listOfRepRefGenomeFnaFiles.txt.msh 
+APPLICATION_BACKEND_DIR = /vol/bvbrc/production/application-backend
 
 APP_DIRECTORY = app_specs
 
@@ -113,6 +114,7 @@ TPAGE_ARGS = \
 	--define app_service_url=$(SERVICE_URL) \
 	--define kma_db=$(KMA_DB) \
 	--define metagenome_dbs=$(METAGENOME_DBS) \
+	--define application_backend_dir=$(APPLICATION_BACKEND_DIR) \
 	$(TPAGE_SERVICE_LOGDIR) \
 	$(TPAGE_TEMPDIR)
 
