@@ -18,6 +18,7 @@ use constant	    binning_spades_ram => '[% binning_spades_ram %]';
 
 use constant	    kma_db => '[% kma_db %]';
 use constant	    metagenome_dbs => '[% metagenome_dbs %]';
+use constant	    application_backend_dir => '[% application_backend_dir %]';
 
 use constant	    sched_db_host => '[% sched_db_host %]';
 use constant	    sched_db_port => '[% sched_db_port %]';
@@ -52,7 +53,7 @@ our @EXPORT_OK = qw(data_api_url github_issue_repo_owner github_issue_repo_name 
 		    binning_genome_annotation_clientgroup mash_reference_sketch
 		    app_directory app_service_url
 		    redis_host redis_port redis_db redis_password
-		    kma_db metagenome_dbs
+		    kma_db metagenome_dbs application_backend_dir
 		    binning_data_api_url
 		    );
 our %EXPORT_TAGS = (all => [@EXPORT_OK]);
