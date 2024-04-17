@@ -715,6 +715,10 @@ EAL
 	{
 	    $vars{sbatch_clusters} = "#SBATCH --clusters " . $cinfo->submit_cluster;
 	}
+	if ($policy->{gpu_count})
+	{
+	    $vars{sbatch_gpus} = "#SBATCH --gpus=$policy->{gpu_count}\n#SBATCH --gres-flags=enforce_binding";
+	}
 
 	$vars{sbatch_reservation} = $policy->{reservation};
 	if (my $c = $policy->{constraint})
