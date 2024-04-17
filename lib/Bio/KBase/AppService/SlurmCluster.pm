@@ -717,7 +717,7 @@ EAL
 	}
 	if ($policy->{gpu_count})
 	{
-	    $vars{sbatch_gpus} = "#SBATCH --gpus=$policy->{gpu_count}\n#SBATCH --gres-flags=enforce_binding";
+	    $vars{sbatch_gpus} = "#SBATCH --gpus=$policy->{gpu_count}\n#SBATCH --gres-flags=enforce-binding";
 	}
 
 	$vars{sbatch_reservation} = $policy->{reservation};
