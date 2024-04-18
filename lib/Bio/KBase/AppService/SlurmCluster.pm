@@ -559,8 +559,8 @@ sub build_submission_for_tasks
 	    my $app_default = $self->schema->resultset('ApplicationDefaultContainer')->find($task->application_id);
 	    if ($app_default)
 	    {
-		$container = $app_default->default_container_id;
-		print STDERR "Choosing container $container for " . $task->id . " due to default container for app " . $task->application_id . "\n";
+		$container = $app_default->default_container;
+		print STDERR "Choosing container " . $container->id . " for " . $task->id . " due to default container for app " . $task->application_id . "\n";
 	    }
 	}
 	if (!$container)
