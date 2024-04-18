@@ -185,6 +185,18 @@ sub run_preflight
 	
 	if (!$task_container)
 	{
+	    #
+	    # Check for container defined for this application type
+	    #
+
+	    my $app_default = $db->schema->resultset('ApplicationDefaultContainer')->find($app_id);
+	    if ($app_default)
+	    {
+		$task_container = $app_default->default_container_id;
+	    }
+	}
+	if (!$task_container)
+	{
 	    # Check for container defined for base url
 	    if (my $base_url = $start_params->{base_url})
 	    {
