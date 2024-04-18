@@ -33,7 +33,6 @@ __PACKAGE__->table_class("DBIx::Class::ResultSource::View");
 =cut
 
 __PACKAGE__->table("StatsGatherNonCollab");
-__PACKAGE__->result_source_instance->view_definition("select month(`t`.`submit_time`) AS `month`,year(`t`.`submit_time`) AS `year`,`t`.`application_id` AS `application_id`,count(`t`.`id`) AS `job_count` from (`AppService`.`Task` `t` join `AppService`.`ServiceUser` `u` on((`t`.`owner` = `u`.`id`))) where ((`t`.`application_id` not in ('Date','Sleep')) and (`u`.`is_collaborator` = 0) and (`u`.`is_staff` = 0) and (`t`.`state_code` = 'C')) group by month(`t`.`submit_time`),year(`t`.`submit_time`),`t`.`application_id` order by year(`t`.`submit_time`),month(`t`.`submit_time`),`t`.`application_id`");
 
 =head1 ACCESSORS
 
@@ -74,8 +73,8 @@ __PACKAGE__->add_columns(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2020-04-09 23:30:46
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:vS30WOvGUGjByW589+DDPA
+# Created by DBIx::Class::Schema::Loader v0.07052 @ 2024-04-18 10:56:27
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:f3zY8HguN94cU8I++K7mEA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

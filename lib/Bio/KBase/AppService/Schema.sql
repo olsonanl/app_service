@@ -110,6 +110,14 @@ CREATE TABLE Application
 	display_order INTEGER
 );
 
+DROP TABLE IF EXISTS ApplicationDefaultContainer;
+CREATE TABLE ApplicationDefaultContainer
+(
+	application_id VARCHAR(255) PRIMARY KEY,
+	default_container_id VARCHAR(2155),
+	FOREIGN KEY (default_container_id) REFERENCES Container(id)
+);
+
 DROP TABLE IF EXISTS  ApplicationSpec;
 CREATE TABLE ApplicationSpec
 (
