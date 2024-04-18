@@ -40,6 +40,11 @@ __PACKAGE__->table("ArchivedTask");
   data_type: 'integer'
   is_nullable: 0
 
+=head2 retry_index
+
+  data_type: 'integer'
+  is_nullable: 0
+
 =head2 owner
 
   data_type: 'varchar'
@@ -105,10 +110,11 @@ __PACKAGE__->table("ArchivedTask");
   data_type: 'json'
   is_nullable: 1
 
-=head2 app_spec
+=head2 app_spec_id
 
-  data_type: 'json'
+  data_type: 'varchar'
   is_nullable: 1
+  size: 64
 
 =head2 req_memory
 
@@ -148,6 +154,12 @@ __PACKAGE__->table("ArchivedTask");
   is_nullable: 1
 
 =head2 container_id
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 255
+
+=head2 data_container_id
 
   data_type: 'varchar'
   is_nullable: 1
@@ -203,16 +215,17 @@ __PACKAGE__->table("ArchivedTask");
   is_nullable: 1
   size: 255
 
-=head2 cancel_requested
+=head2 active
 
   data_type: 'tinyint'
-  default_value: 0
   is_nullable: 1
 
 =cut
 
 __PACKAGE__->add_columns(
   "id",
+  { data_type => "integer", is_nullable => 0 },
+  "retry_index",
   { data_type => "integer", is_nullable => 0 },
   "owner",
   { data_type => "varchar", is_nullable => 1, size => 255 },
@@ -251,8 +264,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "params",
   { data_type => "json", is_nullable => 1 },
-  "app_spec",
-  { data_type => "json", is_nullable => 1 },
+  "app_spec_id",
+  { data_type => "varchar", is_nullable => 1, size => 64 },
   "req_memory",
   { data_type => "varchar", is_nullable => 1, size => 255 },
   "req_cpu",
@@ -268,6 +281,8 @@ __PACKAGE__->add_columns(
   "hidden",
   { data_type => "tinyint", default_value => 0, is_nullable => 1 },
   "container_id",
+  { data_type => "varchar", is_nullable => 1, size => 255 },
+  "data_container_id",
   { data_type => "varchar", is_nullable => 1, size => 255 },
   "base_url",
   { data_type => "varchar", is_nullable => 1, size => 255 },
@@ -287,8 +302,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "exitcode",
   { data_type => "varchar", is_nullable => 1, size => 255 },
-  "cancel_requested",
-  { data_type => "tinyint", default_value => 0, is_nullable => 1 },
+  "active",
+  { data_type => "tinyint", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -299,15 +314,17 @@ __PACKAGE__->add_columns(
 
 =item * L</submit_time>
 
+=item * L</retry_index>
+
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("id", "submit_time");
+__PACKAGE__->set_primary_key("id", "submit_time", "retry_index");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2021-11-03 15:42:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:eH6jTPNJNg5C8ccLoQQSYw
+# Created by DBIx::Class::Schema::Loader v0.07052 @ 2024-04-18 10:56:27
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:sunP+OpNbWsE8mjXSO8Bdw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

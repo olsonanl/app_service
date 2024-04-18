@@ -84,6 +84,21 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
+=head2 application_default_containers
+
+Type: has_many
+
+Related object: L<Bio::KBase::AppService::Schema::Result::ApplicationDefaultContainer>
+
+=cut
+
+__PACKAGE__->has_many(
+  "application_default_containers",
+  "Bio::KBase::AppService::Schema::Result::ApplicationDefaultContainer",
+  { "foreign.default_container_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 clusters
 
 Type: has_many
@@ -130,8 +145,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2021-03-10 14:48:58
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:zKU7umgQVJu/abgHhqGryQ
+# Created by DBIx::Class::Schema::Loader v0.07052 @ 2024-04-18 10:56:27
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:yMBHh7KePEMovImxZup0pA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

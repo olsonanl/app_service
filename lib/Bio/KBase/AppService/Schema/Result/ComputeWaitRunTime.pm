@@ -33,7 +33,6 @@ __PACKAGE__->table_class("DBIx::Class::ResultSource::View");
 =cut
 
 __PACKAGE__->table("compute_wait_run_time");
-__PACKAGE__->result_source_instance->view_definition("select `AppService`.`Task`.`id` AS `id`,`AppService`.`Task`.`application_id` AS `application_id`,`AppService`.`Task`.`state_code` AS `state_code`,timediff(`AppService`.`Task`.`start_time`,`AppService`.`Task`.`submit_time`) AS `wait`,timediff(`AppService`.`Task`.`finish_time`,`AppService`.`Task`.`start_time`) AS `run` from `AppService`.`Task` where (`AppService`.`Task`.`state_code` = 'C')");
 
 =head1 ACCESSORS
 
@@ -81,8 +80,8 @@ __PACKAGE__->add_columns(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2021-03-10 14:48:59
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9mzdlrXOUyGWNEyNBsLdnQ
+# Created by DBIx::Class::Schema::Loader v0.07052 @ 2024-04-18 10:56:27
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9ZCoOlSnXX6azxoINnMCrg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

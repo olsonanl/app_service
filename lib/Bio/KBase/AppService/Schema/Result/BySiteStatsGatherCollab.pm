@@ -1,12 +1,12 @@
 use utf8;
-package Bio::KBase::AppService::Schema::Result::StatsGatherUser;
+package Bio::KBase::AppService::Schema::Result::BySiteStatsGatherCollab;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Bio::KBase::AppService::Schema::Result::StatsGatherUser - VIEW
+Bio::KBase::AppService::Schema::Result::BySiteStatsGatherCollab - VIEW
 
 =cut
 
@@ -28,11 +28,11 @@ use base 'DBIx::Class::Core';
 __PACKAGE__->load_components("InflateColumn::DateTime");
 __PACKAGE__->table_class("DBIx::Class::ResultSource::View");
 
-=head1 TABLE: C<StatsGatherUser>
+=head1 TABLE: C<BySiteStatsGatherCollab>
 
 =cut
 
-__PACKAGE__->table("StatsGatherUser");
+__PACKAGE__->table("BySiteStatsGatherCollab");
 
 =head1 ACCESSORS
 
@@ -51,9 +51,16 @@ __PACKAGE__->table("StatsGatherUser");
 
   data_type: 'varchar'
   is_nullable: 1
-  size: 255
+  size: 262
 
-=head2 user_count
+=head2 site
+
+  data_type: 'varchar'
+  default_value: (empty string)
+  is_nullable: 0
+  size: 6
+
+=head2 job_count
 
   data_type: 'bigint'
   default_value: 0
@@ -67,14 +74,16 @@ __PACKAGE__->add_columns(
   "year",
   { data_type => "integer", extra => { unsigned => 1 }, is_nullable => 1 },
   "application_id",
-  { data_type => "varchar", is_nullable => 1, size => 255 },
-  "user_count",
+  { data_type => "varchar", is_nullable => 1, size => 262 },
+  "site",
+  { data_type => "varchar", default_value => "", is_nullable => 0, size => 6 },
+  "job_count",
   { data_type => "bigint", default_value => 0, is_nullable => 0 },
 );
 
 
 # Created by DBIx::Class::Schema::Loader v0.07052 @ 2024-04-18 10:56:27
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:UgHip+Vr5M4cBb39fEv4dA
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:xtwcZUGdSLHyrN4Lfe4CiA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -99,6 +99,21 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
+=head2 application_specs
+
+Type: has_many
+
+Related object: L<Bio::KBase::AppService::Schema::Result::ApplicationSpec>
+
+=cut
+
+__PACKAGE__->has_many(
+  "application_specs",
+  "Bio::KBase::AppService::Schema::Result::ApplicationSpec",
+  { "foreign.application_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 tasks
 
 Type: has_many
@@ -115,8 +130,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2020-04-09 23:30:45
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:XB+dtHslP8oUodsJsSaLtg
+# Created by DBIx::Class::Schema::Loader v0.07052 @ 2024-04-18 10:56:27
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:PSbV2R+zqDVKDbzyoGkC2w
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

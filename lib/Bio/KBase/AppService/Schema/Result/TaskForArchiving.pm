@@ -33,7 +33,6 @@ __PACKAGE__->table_class("DBIx::Class::ResultSource::View");
 =cut
 
 __PACKAGE__->table("TasksForArchiving");
-__PACKAGE__->result_source_instance->view_definition("select `t`.`id` AS `id`,`t`.`owner` AS `owner`,`t`.`parent_task` AS `parent_task`,`t`.`state_code` AS `state_code`,`t`.`application_id` AS `application_id`,`t`.`submit_time` AS `submit_time`,`t`.`start_time` AS `start_time`,`t`.`finish_time` AS `finish_time`,`t`.`monitor_url` AS `monitor_url`,`t`.`output_path` AS `output_path`,`t`.`output_file` AS `output_file`,if(json_valid(`t`.`params`),`t`.`params`,'{}') AS `params`,if(json_valid(`t`.`app_spec`),`t`.`app_spec`,'{}') AS `app_spec`,`t`.`req_memory` AS `req_memory`,`t`.`req_cpu` AS `req_cpu`,`t`.`req_runtime` AS `req_runtime`,`t`.`req_policy_data` AS `req_policy_data`,`t`.`req_is_control_task` AS `req_is_control_task`,`t`.`search_terms` AS `search_terms`,`t`.`hidden` AS `hidden`,`t`.`container_id` AS `container_id`,`t`.`base_url` AS `base_url`,`t`.`user_metadata` AS `user_metadata`,`cj`.`id` AS `cluster_job_id`,`cj`.`cluster_id` AS `cluster_id`,`cj`.`job_id` AS `job_id`,`cj`.`job_status` AS `job_status`,`cj`.`maxrss` AS `maxrss`,`cj`.`nodelist` AS `nodelist`,`cj`.`exitcode` AS `exitcode`,`cj`.`cancel_requested` AS `cancel_requested` from ((`AppService`.`Task` `t` left join `AppService`.`TaskExecution` `te` on((`t`.`id` = `te`.`task_id`))) left join `AppService`.`ClusterJob` `cj` on((`cj`.`id` = `te`.`cluster_job_id`))) where (isnull(`te`.`active`) or (`te`.`active` = 1))");
 
 =head1 ACCESSORS
 
@@ -112,6 +111,12 @@ __PACKAGE__->result_source_instance->view_definition("select `t`.`id` AS `id`,`t
 
   data_type: 'text'
   is_nullable: 1
+
+=head2 app_spec_id
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 64
 
 =head2 req_memory
 
@@ -257,6 +262,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "app_spec",
   { data_type => "text", is_nullable => 1 },
+  "app_spec_id",
+  { data_type => "varchar", is_nullable => 1, size => 64 },
   "req_memory",
   { data_type => "varchar", is_nullable => 1, size => 255 },
   "req_cpu",
@@ -296,8 +303,8 @@ __PACKAGE__->add_columns(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2021-11-03 15:42:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:GOWFrqWBmnbz8JUTaPoKfg
+# Created by DBIx::Class::Schema::Loader v0.07052 @ 2024-04-18 10:56:27
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:NAZh7a/S7Dp5y/t1nIo8eA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

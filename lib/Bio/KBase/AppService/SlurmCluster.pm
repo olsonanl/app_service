@@ -524,6 +524,15 @@ sub build_submission_for_tasks
     # If P3_CONTAINER is set, assume the file has been placed and that
     # a dynamic download is NOT to be attempted.
     #
+    # We support a set of hierarchical overrides for container selection.
+    # In order of importance:
+    #
+    # P3_CONTAINER hard override
+    # Container setting from the Task being scheduled
+    # Container setting from the ApplicationDefaultContainer for the Task's application
+    # Container setting from the SiteDefaultContainer for the site the Task was submitted from
+    # Cluster default container
+    #
 
     local $Data::Dumper::Maxdepth = 1;
     
@@ -541,6 +550,19 @@ sub build_submission_for_tasks
 	my $base_url = $task->base_url;
 
 	my $container = $task->container;
+
+	if (!$container)
+	{
+	    #
+	    # Query the application default container table for a app-default container.
+	    #
+	    my $app_default = $self->schema->resultset('ApplicationDefaultContainer')->find($task->application_id);
+	    if ($app_default)
+	    {
+		$container = $app_default->default_container_id;
+		print STDERR "Choosing container $container for " . $task->id . " due to default container for app " . $task->application_id . "\n";
+	    }
+	}
 	if (!$container)
 	{
 	    #

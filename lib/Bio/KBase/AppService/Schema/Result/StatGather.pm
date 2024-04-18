@@ -33,7 +33,6 @@ __PACKAGE__->table_class("DBIx::Class::ResultSource::View");
 =cut
 
 __PACKAGE__->table("StatsGather");
-__PACKAGE__->result_source_instance->view_definition("select `StatsGatherCollab`.`month` AS `month`,`StatsGatherCollab`.`year` AS `year`,`StatsGatherCollab`.`application_id` AS `application_id`,`StatsGatherCollab`.`job_count` AS `job_count` from `AppService`.`StatsGatherCollab` union select `StatsGatherNonCollab`.`month` AS `month`,`StatsGatherNonCollab`.`year` AS `year`,`StatsGatherNonCollab`.`application_id` AS `application_id`,`StatsGatherNonCollab`.`job_count` AS `job_count` from `AppService`.`StatsGatherNonCollab` order by `year`,`month`,`application_id`");
 
 =head1 ACCESSORS
 
@@ -74,8 +73,8 @@ __PACKAGE__->add_columns(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2020-04-09 23:30:46
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:MeidYciRKYrYhVUW1vpZMg
+# Created by DBIx::Class::Schema::Loader v0.07052 @ 2024-04-18 10:56:27
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ehPAk4zVfAzkJHyB5NKVpQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
