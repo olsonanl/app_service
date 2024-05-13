@@ -152,6 +152,7 @@ echo "Running script [% task.script %] in container [% container_image %]"
 cd /
 export TMPDIR=/tmp
 export TEMPDIR=/tmp
+export P3_CONTAINER="[% container_image %]"
 
 #
 # Check for metagenome & blast databases and bind into the container run

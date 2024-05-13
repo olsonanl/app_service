@@ -325,6 +325,11 @@ sub run
     $rest->addHeader("Authorization", "OAuth " . $self->token()->token());
     print STDERR "Logging to " . "$appserv_url/" . $self->task_id . "\n";
     $self->{rest} = $rest;
+
+    if ($ENV{P3_CONTAINER})
+    {
+	print STDERR "Container path: $ENV{P3_CONTAINER}\n";
+    }
 	
     if (open(T, "<", "/.singularity.d/labels.json"))
     {
