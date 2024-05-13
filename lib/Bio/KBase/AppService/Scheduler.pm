@@ -52,63 +52,72 @@ sub new
     #
 
     my $redis;
-    my $cv;
-    $cv = AnyEvent->condvar;
-
-    $redis = EV::Hiredis->new(host => redis_host,
-			      (redis_port ? (port => redis_port) : ()),
-			      on_connect => sub {
-				  if (redis_password)
-				  {
-				      $redis->command("auth", redis_password, sub {
-					  $cv->send();
-				      });
-				  }
-				  else
-				  {
-				      $cv->send();
-				  }
-			      });
-    $cv->wait();
-    undef $cv;
-    $cv = AnyEvent->condvar;
-    
-    $redis->command("select", redis_db, sub {
-	print  "select finished\n";
-	$cv->send();
-    },);
-    $cv->wait();
-    undef $cv;
-
     my $cmd_redis;
-    $cv = AnyEvent->condvar;
+    eval {
+	my $cv;
+	$cv = AnyEvent->condvar;
 
-    $cmd_redis = EV::Hiredis->new(host => redis_host,
-			      (redis_port ? (port => redis_port) : ()),
-			      on_connect => sub {
-				  if (redis_password)
-				  {
-				      $redis->command("auth", redis_password, sub {
+	$redis = EV::Hiredis->new(host => redis_host,
+				  (redis_port ? (port => redis_port) : ()),
+				  on_connect => sub {
+				      if (redis_password)
+				      {
+					  $redis->command("auth", redis_password, sub {
+					      $cv->send();
+					  });
+				      }
+				      else
+				      {
 					  $cv->send();
+				      }
+				  });
+	$cv->wait();
+	undef $cv;
+	$cv = AnyEvent->condvar;
+	
+	$redis->command("select", redis_db, sub {
+	    print  "select finished\n";
+	    $cv->send();
+	},);
+	$cv->wait();
+	undef $cv;
+	
+	$cv = AnyEvent->condvar;
+	
+	$cmd_redis = EV::Hiredis->new(host => redis_host,
+				      (redis_port ? (port => redis_port) : ()),
+				      on_connect => sub {
+					  if (redis_password)
+					  {
+					      $redis->command("auth", redis_password, sub {
+						  $cv->send();
+					      });
+					  }
+					  else
+					  {
+					      $cv->send();
+					  }
 				      });
-				  }
-				  else
-				  {
-				      $cv->send();
-				  }
-			      });
-    $cv->wait();
-    undef $cv;
-    $cv = AnyEvent->condvar;
+	$cv->wait();
+	undef $cv;
+	$cv = AnyEvent->condvar;
+	
+	$redis->command("select", redis_db, sub {
+	    print  "select finished\n";
+	    $cv->send();
+	},);
+	$cv->wait();
+	undef $cv;
+	print "cmd_redis ready\n";
+    };
+    if ($@)
+    {
+	warn "Could not connect to redis: $@\n";
+	undef $redis;
+	undef $cmd_redis;
+    }
+	
     
-    $redis->command("select", redis_db, sub {
-	print  "select finished\n";
-	$cv->send();
-    },);
-    $cv->wait();
-    undef $cv;
-    print "cmd_redis ready\n";
-
     $schema->storage->ensure_connected();
     my $self = {
 	schema => $schema,
@@ -142,59 +151,61 @@ sub new
     # progress check callbacks will still fire as normal since they are
     # timer-based.
     #
-    $redis->command("subscribe", "task_submission",
-		    sub {
-			my($result, $error) = @_;
-			if ($error)
-			{
-			    warn "Redis error on submit: $error\n";
-			}
-			else
-			{
-			    if (ref($result))
+    if ($redis)
+    {
+	$redis->command("subscribe", "task_submission",
+			sub {
+			    my($result, $error) = @_;
+			    if ($error)
 			    {
-				my($what, $channel, $data) = @$result;
-				return if $what eq 'subscribe';
-				print "Tasksub: what=$what data=$data\n";
-				if (!$self->{idle_handler})
-				{
-				    $self->{idle_handler} = AnyEvent->idle(cb => sub {
-					undef $self->{idle_handler};
-					$self->task_start_check();
-				    });
-				}
+				warn "Redis error on submit: $error\n";
 			    }
 			    else
 			    {
-				print STDERR "redis: $result\n";
-			    }
-			}
-		    });
-			
-    $redis->command("subscribe", "task_completion",
-		    sub {
-			my($result, $error) = @_;
-			if ($error)
-			{
-			    warn "Redis error on submit: $error\n";
-			}
-			else
-			{
-			    if (ref($result))
-			    {
-				my($what, $channel, $data) = @$result;
-				if ($what eq 'message' && $data =~ /^\d+$/)
+				if (ref($result))
 				{
-				    $self->task_completion_seen($data);
+				    my($what, $channel, $data) = @$result;
+				    return if $what eq 'subscribe';
+				    print "Tasksub: what=$what data=$data\n";
+				    if (!$self->{idle_handler})
+				    {
+					$self->{idle_handler} = AnyEvent->idle(cb => sub {
+					    undef $self->{idle_handler};
+					    $self->task_start_check();
+					});
+				    }
 				}
+				else
+				{
+				    print STDERR "redis: $result\n";
+				}
+			    }
+			});
+	
+	$redis->command("subscribe", "task_completion",
+			sub {
+			    my($result, $error) = @_;
+			    if ($error)
+			    {
+				warn "Redis error on submit: $error\n";
 			    }
 			    else
 			    {
-				print STDERR "redis: $result\n";
+				if (ref($result))
+				{
+				    my($what, $channel, $data) = @$result;
+				    if ($what eq 'message' && $data =~ /^\d+$/)
+				    {
+					$self->task_completion_seen($data);
+				    }
+				}
+				else
+				{
+				    print STDERR "redis: $result\n";
+				}
 			    }
-			}
-		    });
-			
+			});
+    }
 
     #
     # Set up for clean shutdown on signal receipt.
