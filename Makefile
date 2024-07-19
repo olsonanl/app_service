@@ -178,7 +178,7 @@ deploy-service: deploy-dir deploy-monit deploy-libs deploy-service-scripts-local
 	rm -f $(TARGET)/postinstall/$(SERVICE)
 	ln -s ../services/$(SERVICE)/postinstall $(TARGET)/postinstall/$(SERVICE)
 	if [ -d app_specs ] ; then \
-		rsync -arv app_specs $(TARGET)/services/$(SERVICE)/. \
+		rsync -arv app_specs $(TARGET)/services/$(SERVICE)/. ; \
 	fi
 
 deploy-dancer-config:
