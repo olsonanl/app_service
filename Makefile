@@ -177,7 +177,9 @@ deploy-service: deploy-dir deploy-monit deploy-libs deploy-service-scripts-local
 	mkdir -p $(TARGET)/postinstall
 	rm -f $(TARGET)/postinstall/$(SERVICE)
 	ln -s ../services/$(SERVICE)/postinstall $(TARGET)/postinstall/$(SERVICE)
-	rsync -arv app_specs $(TARGET)/services/$(SERVICE)/.
+	if [[ -d app_specs ]] ; then \
+		rsync -arv app_specs $(TARGET)/services/$(SERVICE)/. \
+	fi
 
 deploy-dancer-config:
 	$(TPAGE) --define deployment_flag=1 $(TPAGE_DEPLOY_ARGS) $(TPAGE_ARGS) dancer_config.yml.tt > $(TARGET)/services/$(SERVICE)/config.yml
