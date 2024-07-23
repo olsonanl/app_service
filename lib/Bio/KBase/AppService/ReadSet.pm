@@ -66,9 +66,10 @@ sub create_from_asssembly_params
     }
     for my $se (@{$params->{single_end_libs}})
     {
-	my($read, $platform, $sample_id, $sample_level_date, $primers, $primer_version) = @$se{qw(read platform sample_id sample_level_date primers primer_version)};
+	my($read, $platform, $sample_id, $condition, $sample_level_date, $primers, $primer_version) = @$se{qw(read platform sample_id condition sample_level_date primers primer_version)};
 	my $nlib = SingleEndLibrary->new($read, $platform);
 	$nlib->{sample_id} = $sample_id if $sample_id;
+	$nlib->{condition} = $condition if $condition;
 	$nlib->{sample_level_date} = $sample_level_date if $sample_level_date;
 	$nlib->{primers} = $primers if $primers;
 	$nlib->{primer_version} = $primer_version if $primer_version;
