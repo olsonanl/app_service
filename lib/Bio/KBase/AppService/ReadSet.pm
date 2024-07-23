@@ -44,7 +44,7 @@ sub create_from_asssembly_params
     my @libs;
     for my $pe (@{$params->{paired_end_libs}})
     {
-	my($r1, $r2, $platform, $interleaved, $sample_id, $sample_level_date, $primers, $primer_version) = @$pe{qw(read1 read2 platform interleaved sample_id sample_level_date primers primer_version)};
+	my($r1, $r2, $platform, $interleaved, $sample_id, $condition, $sample_level_date, $primers, $primer_version) = @$pe{qw(read1 read2 platform interleaved sample_id condition sample_level_date primers primer_version)};
 
 	my $nlib;
 
@@ -57,6 +57,7 @@ sub create_from_asssembly_params
 	    $nlib = PairedEndLibrary->new($r1, $r2, $platform);
 	}
 	$nlib->{sample_id} = $sample_id if $sample_id;
+	$nlib->{condition} = $condition if $condition;
 	$nlib->{sample_level_date} = $sample_level_date if $sample_level_date;
 	$nlib->{primers} = $primers if $primers;
 	$nlib->{primer_version} = $primer_version if $primer_version;
@@ -65,9 +66,10 @@ sub create_from_asssembly_params
     }
     for my $se (@{$params->{single_end_libs}})
     {
-	my($read, $platform, $sample_id, $sample_level_date, $primers, $primer_version) = @$se{qw(read platform sample_id sample_level_date primers primer_version)};
+	my($read, $platform, $sample_id, $condition, $sample_level_date, $primers, $primer_version) = @$se{qw(read platform sample_id condition sample_level_date primers primer_version)};
 	my $nlib = SingleEndLibrary->new($read, $platform);
 	$nlib->{sample_id} = $sample_id if $sample_id;
+	$nlib->{condition} = $condition if $condition;
 	$nlib->{sample_level_date} = $sample_level_date if $sample_level_date;
 	$nlib->{primers} = $primers if $primers;
 	$nlib->{primer_version} = $primer_version if $primer_version;
@@ -99,6 +101,7 @@ sub create_from_asssembly_params
 	    my $libobj = SRRLibrary->new($1);
 	    push(@libs, $libobj);
 	    $libobj->{sample_id} = $lib->{sample_id} if exists $lib->{sample_id};
+	    $libobj->{condition} = $lib->{condition} if exists $lib->{condition};
 		$libobj->{sample_level_date} = $lib->{sample_level_date} if exists $lib->{sample_level_date};
 		$libobj->{primers} = $lib->{primers} if exists $lib->{primers};
 		$libobj->{primer_version} = $lib->{primer_version} if exists $lib->{primer_version};
