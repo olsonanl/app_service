@@ -44,7 +44,7 @@ sub create_from_asssembly_params
     my @libs;
     for my $pe (@{$params->{paired_end_libs}})
     {
-	my($r1, $r2, $platform, $interleaved, $sample_id, $sample_level_date, $primers, $primer_version) = @$pe{qw(read1 read2 platform interleaved sample_id sample_level_date primers primer_version)};
+	my($r1, $r2, $platform, $interleaved, $sample_id, $condition, $sample_level_date, $primers, $primer_version) = @$pe{qw(read1 read2 platform interleaved sample_id condition sample_level_date primers primer_version)};
 
 	my $nlib;
 
