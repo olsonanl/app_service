@@ -57,6 +57,7 @@ sub create_from_asssembly_params
 	    $nlib = PairedEndLibrary->new($r1, $r2, $platform);
 	}
 	$nlib->{sample_id} = $sample_id if $sample_id;
+	$nlib->{condition} = $condition if $condition;
 	$nlib->{sample_level_date} = $sample_level_date if $sample_level_date;
 	$nlib->{primers} = $primers if $primers;
 	$nlib->{primer_version} = $primer_version if $primer_version;
