@@ -101,6 +101,7 @@ sub create_from_asssembly_params
 	    my $libobj = SRRLibrary->new($1);
 	    push(@libs, $libobj);
 	    $libobj->{sample_id} = $lib->{sample_id} if exists $lib->{sample_id};
+	    $libobj->{condition} = $lib->{condition} if exists $lib->{condition};
 		$libobj->{sample_level_date} = $lib->{sample_level_date} if exists $lib->{sample_level_date};
 		$libobj->{primers} = $lib->{primers} if exists $lib->{primers};
 		$libobj->{primer_version} = $lib->{primer_version} if exists $lib->{primer_version};
