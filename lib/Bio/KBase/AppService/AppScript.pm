@@ -659,6 +659,8 @@ sub preprocess_parameters
     my %proc_param;
 
     my @errors;
+
+    my %param_ids = map { $_ => 1 } keys %$params;
     for my $param (@{$app_def->{parameters}})
     {
 	#
@@ -673,6 +675,7 @@ sub preprocess_parameters
 	if (exists($params->{$id}))
 	{
 	    my $value = $params->{$param->{id}};
+	    delete $param_ids{$param->{id}};
 
 	    if ($param->{type} eq 'bool')
 	    {
@@ -735,6 +738,12 @@ sub preprocess_parameters
 		next;
 	    }
 	}
+    }
+    my @missing = sort keys %param_ids;
+    if (@missing)
+    {
+	warn "The following parameters were provided in the job submission but not specified in the app spec for $app_def->{id}:\n\t" .
+	    join("\n\t", map { "$_ = " . encode_json($params->{$_}) } @missing). "\n";
     }
     if (@errors)
     {
