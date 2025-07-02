@@ -788,12 +788,11 @@ sub copy_from_tmp
 	# Check for that case.
 	#
 	my($base, $npath, $suffix) = fileparse($tfile, '.fastq', '.fq');
-	print Dumper($file, $base, $npath, $suffix);
 	my $nfile = "$npath${base}_1$suffix";
 	
 	if (-f $nfile)
 	{
-	    print STDERR "Moving from $nfile instead\n";
+	    print STDERR "Moving from $nfile instead of $tfile\n";
 	    if (!move($nfile, $self->{read_path}))
 	    {
 		die "copy_from_tmp: error moving $nfile => $self->{read_path}: $!";
