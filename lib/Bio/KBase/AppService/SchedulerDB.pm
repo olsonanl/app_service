@@ -41,7 +41,8 @@ sub dbh
     my($self) = @_;
     return $self->{dbh} if $self->{dbh};
     
-    my $dbh =  $self->{dbh} = DBI->connect($self->dsn, $self->user, $self->pass, { AutoCommit => 1, RaiseError => 1 });
+    my $dbh =  $self->{dbh} = DBI->connect($self->dsn, $self->user, $self->pass,
+				       { mysql_ssl => 1, AutoCommit => 1, RaiseError => 1 });
     $dbh or die "Cannot connect to database: " . $DBI::errstr;
     $dbh->do(qq(SET time_zone = "+00:00"));
     return $dbh;
@@ -445,18 +446,18 @@ sub query_task_summary
 {
     my($self, $user_id) = @_;
 
-    my $res = $self->dbh->selectall_arrayref(qq(SELECT count(id) as count, state_code
-						FROM (SELECT id, state_code
-						      FROM Task 
+    my $res = $self->dbh->selectall_arrayref(qq(SELECT COUNT(id) AS count, service_status
+						FROM (SELECT id, ts.service_status
+						      FROM Task t JOIN TaskState ts ON t.state_code = ts.code
 						      WHERE owner = ?
 						      UNION
-						      SELECT id, state_code
-						      FROM ArchivedTask 
+						      SELECT id, service_status
+						      FROM ArchivedTask t JOIN TaskState ts ON t.state_code = ts.code
 						      WHERE owner = ?) as t
-						GROUP BY state_code), undef, $user_id, $user_id);
+						GROUP BY service_status), undef, $user_id, $user_id);
 
     my $ret = {};
-    $ret->{$self->state_code_name($_->[1])} = int($_->[0]) foreach @$res;
+    $ret->{$_->[1]} = int($_->[0]) foreach @$res;
 
     return $ret;
 }
