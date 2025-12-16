@@ -114,7 +114,7 @@ if free < 1000 or (req > 0 and free < 8 * req):
                          "requeue", os.getenv("SLURM_JOBID")]);
         sys.exit(1);
 else:
-    print >> sys.stderr, "Node has sfficient temporary space (avail %d MB, requested %d MB)" % (free, req)
+    print >> sys.stderr, "Node has sufficient temporary space (avail %d MB, requested %d MB)" % (free, req)
     print ctemp
  
 END
