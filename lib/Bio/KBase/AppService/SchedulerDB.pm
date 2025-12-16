@@ -413,7 +413,7 @@ sub query_tasks
 
 				     FROM Task JOIN TaskState ON state_code = code
 					       WHERE id IN ($id_list)
-				     UNION
+				     UNION ALL
 				     SELECT id, parent_task, application_id, params, owner, state_code,
 				     if(submit_time = default(submit_time), "", submit_time) as submit_time,
 				     if(start_time = default(start_time), "", start_time) as start_time,
@@ -450,7 +450,7 @@ sub query_task_summary
 						FROM (SELECT id, ts.service_status
 						      FROM Task t JOIN TaskState ts ON t.state_code = ts.code
 						      WHERE owner = ?
-						      UNION
+						      UNION ALL
 						      SELECT id, service_status
 						      FROM ArchivedTask t JOIN TaskState ts ON t.state_code = ts.code
 						      WHERE owner = ?) as t
