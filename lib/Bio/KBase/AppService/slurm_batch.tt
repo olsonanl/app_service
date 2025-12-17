@@ -228,7 +228,7 @@ nv_flag="--nv"
 [% ELSE -%]
 nv_flag=""
 [% END -%]
-singularity run \
+singularity exec \
 	    -H $WORKDIR \
 	    --env P3_WORKDIR="$WORKDIR",P3_DATA_CONTAINER="$P3_DATA_CONTAINER",P3_DATA_BIND_DESTINATION="$P3_DATA_BIND_DESTINATION" \
 	    -B $WORKDIR:/tmp${data_bind}${nfs_bindings}${mg_bind} \
