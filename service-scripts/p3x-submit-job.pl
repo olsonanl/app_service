@@ -265,8 +265,6 @@ sub run_preflight
 	
 	my @singularity_opts;
 	
-	my @singularity_opts;
-
 	my @to_bind = qw(/vol/blastdb/bvbrc-service /vol/bvbrc/production/application-backend /vol/patric3/tmp /vol/structure /local_databases);
 
 	my $bind = join(",", grep { -d $_ } @to_bind);
