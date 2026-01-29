@@ -510,6 +510,70 @@ sub query_task_summary_async
 					  &$cb([$ret])});
 }
 
+=item B<query_task_summary_filtered>
+
+Return a summary of the counts of task statuses for the specified user,
+filtered by the given SimpleTaskFilter.
+
+If include_archived is true, includes both Task and ArchivedTask tables.
+The 'status' field in the filter is ignored since we want counts for ALL statuses.
+
+=cut
+
+sub query_task_summary_filtered
+{
+    my($self, $user_id, $simple_filter) = @_;
+
+    # Build filter conditions, but exclude status since we want counts per status
+    my ($cond, @param) = $self->_build_filter_conditions($user_id, $simple_filter, { exclude_status => 1 });
+
+    my $include_archived = $simple_filter->{include_archived} ? 1 : 0;
+
+    my $qry;
+    my @all_params;
+
+    if ($include_archived)
+    {
+	#
+	# Query both Task and ArchivedTask tables with UNION ALL
+	#
+	$qry = qq(
+	    SELECT service_status, SUM(cnt) as count FROM (
+		SELECT ts.service_status, COUNT(t.id) as cnt
+		FROM Task t JOIN TaskState ts ON t.state_code = ts.code
+		WHERE $cond
+		GROUP BY ts.service_status
+		UNION ALL
+		SELECT ts.service_status, COUNT(t.id) as cnt
+		FROM ArchivedTask t JOIN TaskState ts ON t.state_code = ts.code
+		WHERE $cond
+		GROUP BY ts.service_status
+	    ) combined
+	    GROUP BY service_status
+	);
+	@all_params = (@param, @param);
+    }
+    else
+    {
+	#
+	# Query only Task table (backward compatible behavior)
+	#
+	$qry = qq(
+	    SELECT ts.service_status, COUNT(t.id) as count
+	    FROM Task t JOIN TaskState ts ON t.state_code = ts.code
+	    WHERE $cond
+	    GROUP BY ts.service_status
+	);
+	@all_params = @param;
+    }
+
+    my $res = $self->dbh->selectall_arrayref($qry, undef, @all_params);
+
+    my $ret = {};
+    $ret->{$_->[0]} = int($_->[1]) foreach @$res;
+    return $ret;
+}
+
 =item B<query_app_summary>
 
 Return a summary of the counts of the apps for the specified user, asynchronous version.
@@ -557,7 +621,8 @@ sub query_app_summary_async
 Build WHERE clause conditions and parameters from a SimpleTaskFilter.
 
 Options:
-  exclude_app => 1   Skip the app filter (used by query_app_summary_filtered)
+  exclude_app => 1      Skip the app filter (used by query_app_summary_filtered)
+  exclude_status => 1   Skip the status filter (used by query_task_summary_filtered)
 
 Returns ($where_clause, @params)
 
@@ -610,12 +675,15 @@ sub _build_filter_conditions
 	}
     }
 
-    if (my $st = $simple_filter->{status})
+    if (!$opts->{exclude_status})
     {
-	if ($st =~ /^[-0-9a-zA-Z]+$/)
+	if (my $st = $simple_filter->{status})
 	{
-	    push(@cond, "ts.service_status = ?");
-	    push(@param, $st);
+	    if ($st =~ /^[-0-9a-zA-Z]+$/)
+	    {
+		push(@cond, "ts.service_status = ?");
+		push(@param, $st);
+	    }
 	}
     }
 

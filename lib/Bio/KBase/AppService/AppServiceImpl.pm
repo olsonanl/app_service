@@ -1257,6 +1257,100 @@ sub enumerate_tasks_filtered
 }
 
 
+=head2 query_task_summary_filtered
+
+  $status = $obj->query_task_summary_filtered($simple_filter)
+
+=over 4
+
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$simple_filter is a SimpleTaskFilter
+$status is a reference to a hash where the key is a task_status and the value is an int
+SimpleTaskFilter is a reference to a hash where the following keys are defined:
+	start_time has a value which is a string
+	end_time has a value which is a string
+	app has a value which is an app_id
+	search has a value which is a string
+	status has a value which is a string
+	include_archived has a value which is an int
+app_id is a string
+task_status is a string
+</pre>
+
+=end html
+
+=begin text
+
+$simple_filter is a SimpleTaskFilter
+$status is a reference to a hash where the key is a task_status and the value is an int
+SimpleTaskFilter is a reference to a hash where the following keys are defined:
+	start_time has a value which is a string
+	end_time has a value which is a string
+	app has a value which is an app_id
+	search has a value which is a string
+	status has a value which is a string
+	include_archived has a value which is an int
+app_id is a string
+task_status is a string
+
+=end text
+
+
+
+=item Description
+
+
+=back
+
+=cut
+
+sub query_task_summary_filtered
+{
+    my $self = shift;
+    my($simple_filter) = @_;
+
+    my @_bad_arguments;
+    (ref($simple_filter) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"simple_filter\" (value was \"$simple_filter\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to query_task_summary_filtered:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	die $msg;
+    }
+
+    my $ctx = $Bio::KBase::AppService::Service::CallContext;
+    my($status);
+    #BEGIN query_task_summary_filtered
+
+    # Build cache key from filter (excluding status since we want all statuses)
+    my $filter_key = join(':',
+	'query_task_summary_filtered',
+	$simple_filter->{app} // '',
+	$simple_filter->{start_time} // '',
+	$simple_filter->{end_time} // '',
+	$simple_filter->{search} // '',
+	$simple_filter->{include_archived} ? '1' : '0'
+    );
+
+    $status = $self->_redis_get_or_compute($ctx->user_id, $filter_key,
+					   sub {
+					       return $self->{scheduler_db}->query_task_summary_filtered($ctx->user_id, $simple_filter);
+					   });
+
+    #END query_task_summary_filtered
+    my @_bad_returns;
+    (ref($status) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"status\" (value was \"$status\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to query_task_summary_filtered:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	die $msg;
+    }
+    return($status);
+}
+
+
 =head2 query_app_summary_filtered
 
   $status = $obj->query_app_summary_filtered($simple_filter)

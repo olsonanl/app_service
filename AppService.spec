@@ -112,6 +112,9 @@ module AppService
     funcdef enumerate_tasks_filtered(int offset, int count, SimpleTaskFilter simple_filter)
 	returns (list<Task> tasks, int total_tasks);
 
+    funcdef query_task_summary_filtered(SimpleTaskFilter simple_filter)
+	returns (mapping<task_status status, int count> status);
+
     funcdef query_app_summary_filtered(SimpleTaskFilter simple_filter)
 	returns (mapping<app_id app, int count> status);
 
