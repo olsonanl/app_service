@@ -108,6 +108,8 @@ module AppService
 	string search;
 	string status;
 	int include_archived;
+	string sort_field;
+	string sort_order;
     } SimpleTaskFilter;
     funcdef enumerate_tasks_filtered(int offset, int count, SimpleTaskFilter simple_filter)
 	returns (list<Task> tasks, int total_tasks);

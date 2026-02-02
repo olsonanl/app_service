@@ -1023,10 +1023,16 @@ sub enumerate_tasks_filtered_async
 
 Enumerate the task owned by the given user.
 
-The $simple_filter is a hash with keys start_time, end_time, app, search, status, include_archived.
+The $simple_filter is a hash with keys start_time, end_time, app, search, status, include_archived,
+sort_field, and sort_order.
 
 If include_archived is true, queries both Task and ArchivedTask tables with
 pagination that spans across tables (active tasks first, then archived).
+
+Supported sort_field values: submit_time (default), start_time, finish_time,
+application_id, service_status, id, output_name.
+
+Supported sort_order values: desc (default), asc.
 
 =cut
 
@@ -1037,6 +1043,30 @@ sub enumerate_tasks_filtered
     my ($cond, @param) = $self->_build_filter_conditions($user_id, $simple_filter);
 
     my $include_archived = $simple_filter->{include_archived} ? 1 : 0;
+
+    #
+    # Build ORDER BY clause from sort_field and sort_order
+    #
+    my %valid_sort_fields = (
+	submit_time    => 't.submit_time',
+	start_time     => 't.start_time',
+	finish_time    => 't.finish_time',
+	application_id => 't.application_id',
+	service_status => 'ts.service_status',
+	id             => 't.id',
+	output_file    => 't.output_file',
+    );
+
+    my $sort_field = $simple_filter->{sort_field} // 'submit_time';
+    my $sort_order = lc($simple_filter->{sort_order} // 'desc');
+
+    # Validate sort_field - fall back to submit_time if invalid
+    my $order_col = $valid_sort_fields{$sort_field} // 't.submit_time';
+
+    # Validate sort_order - fall back to DESC if invalid
+    $sort_order = 'desc' unless $sort_order eq 'asc';
+
+    my $order_clause = "ORDER BY $order_col " . uc($sort_order);
 
     my $ret_fields = "t.id, t.parent_task, t.application_id, t.params, t.owner, ";
     for my $x (qw(submit_time start_time finish_time))
@@ -1056,7 +1086,7 @@ sub enumerate_tasks_filtered
 	my $qry = qq(SELECT $ret_fields
 		     FROM Task t JOIN TaskState ts on t.state_code = ts.code
 		     WHERE $cond
-		     ORDER BY t.submit_time DESC
+		     $order_clause
 		     LIMIT ?
 		     OFFSET ?);
 	my $count_qry = qq(SELECT COUNT(t.id)
@@ -1144,7 +1174,7 @@ sub enumerate_tasks_filtered
 	my $active_qry = qq(SELECT $ret_fields
 			    FROM Task t JOIN TaskState ts ON t.state_code = ts.code
 			    WHERE $cond
-			    ORDER BY t.submit_time DESC
+			    $order_clause
 			    LIMIT ?
 			    OFFSET ?);
 	my $sth = $dbh->prepare($active_qry);
@@ -1160,7 +1190,7 @@ sub enumerate_tasks_filtered
 	my $archive_qry = qq(SELECT $ret_fields
 			     FROM ArchivedTask t JOIN TaskState ts ON t.state_code = ts.code
 			     WHERE $cond
-			     ORDER BY t.submit_time DESC
+			     $order_clause
 			     LIMIT ?
 			     OFFSET ?);
 	my $sth = $dbh->prepare($archive_qry);

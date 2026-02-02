@@ -1155,6 +1155,8 @@ SimpleTaskFilter is a reference to a hash where the following keys are defined:
 	search has a value which is a string
 	status has a value which is a string
 	include_archived has a value which is an int
+	sort_field has a value which is a string
+	sort_order has a value which is a string
 app_id is a string
 Task is a reference to a hash where the following keys are defined:
 	id has a value which is a task_id
@@ -1193,6 +1195,8 @@ SimpleTaskFilter is a reference to a hash where the following keys are defined:
 	search has a value which is a string
 	status has a value which is a string
 	include_archived has a value which is an int
+	sort_field has a value which is a string
+	sort_order has a value which is a string
 app_id is a string
 Task is a reference to a hash where the following keys are defined:
 	id has a value which is a task_id
@@ -1242,8 +1246,48 @@ sub enumerate_tasks_filtered
     my $ctx = $Bio::KBase::AppService::Service::CallContext;
     my($tasks, $total_tasks);
     #BEGIN enumerate_tasks_filtered
-    
-    ($tasks, $total_tasks) = $self->{scheduler_db}->enumerate_tasks_filtered($ctx->user_id, $offset, $count, $simple_filter);
+
+    my $search = $simple_filter->{search} // '';
+
+    if ($search ne '')
+    {
+	#
+	# Cache search queries - they use expensive full-text search
+	#
+	my $cache_key = join(":",
+	    "enumerate_tasks_filtered",
+	    $offset,
+	    $count,
+	    $search,
+	    $simple_filter->{app} // '',
+	    $simple_filter->{status} // '',
+	    $simple_filter->{start_time} // '',
+	    $simple_filter->{end_time} // '',
+	    $simple_filter->{include_archived} ? '1' : '0',
+	    $simple_filter->{sort_field} // '',
+	    $simple_filter->{sort_order} // '',
+	);
+
+	my $cached = $self->_redis_get_or_compute($ctx->user_id, $cache_key,
+	    sub {
+		my ($t, $total) = $self->{scheduler_db}->enumerate_tasks_filtered(
+		    $ctx->user_id, $offset, $count, $simple_filter
+		);
+		return { tasks => $t, total => $total };
+	    });
+
+	$tasks = $cached->{tasks};
+	$total_tasks = $cached->{total};
+    }
+    else
+    {
+	#
+	# No search - query directly without caching
+	#
+	($tasks, $total_tasks) = $self->{scheduler_db}->enumerate_tasks_filtered(
+	    $ctx->user_id, $offset, $count, $simple_filter
+	);
+    }
 
     #END enumerate_tasks_filtered
     my @_bad_returns;
@@ -1278,6 +1322,8 @@ SimpleTaskFilter is a reference to a hash where the following keys are defined:
 	search has a value which is a string
 	status has a value which is a string
 	include_archived has a value which is an int
+	sort_field has a value which is a string
+	sort_order has a value which is a string
 app_id is a string
 task_status is a string
 </pre>
@@ -1295,6 +1341,8 @@ SimpleTaskFilter is a reference to a hash where the following keys are defined:
 	search has a value which is a string
 	status has a value which is a string
 	include_archived has a value which is an int
+	sort_field has a value which is a string
+	sort_order has a value which is a string
 app_id is a string
 task_status is a string
 
@@ -1372,6 +1420,8 @@ SimpleTaskFilter is a reference to a hash where the following keys are defined:
 	search has a value which is a string
 	status has a value which is a string
 	include_archived has a value which is an int
+	sort_field has a value which is a string
+	sort_order has a value which is a string
 app_id is a string
 </pre>
 
@@ -1388,6 +1438,8 @@ SimpleTaskFilter is a reference to a hash where the following keys are defined:
 	search has a value which is a string
 	status has a value which is a string
 	include_archived has a value which is an int
+	sort_field has a value which is a string
+	sort_order has a value which is a string
 app_id is a string
 
 =end text
@@ -2150,6 +2202,8 @@ app has a value which is an app_id
 search has a value which is a string
 status has a value which is a string
 include_archived has a value which is an int
+sort_field has a value which is a string
+sort_order has a value which is a string
 
 </pre>
 
@@ -2164,6 +2218,8 @@ app has a value which is an app_id
 search has a value which is a string
 status has a value which is a string
 include_archived has a value which is an int
+sort_field has a value which is a string
+sort_order has a value which is a string
 
 
 =end text
